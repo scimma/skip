@@ -9,6 +9,7 @@ from confluent_kafka import Consumer
 HOPSKOTCH_SERVER = settings.HOPSKOTCH_SERVER
 HOPSKOTCH_PORT = settings.HOPSKOTCH_PORT
 HOPSKOTCH_GROUP = settings.HOPSKOTCH_GROUP
+HOPSKOTCH_AUTO_OFFSET_RESET = settings.HOPSKOTCH_AUTO_OFFSET_RESET
 HOPSKOTCH_TOPICS = settings.HOPSKOTCH_TOPICS
 HOPSKOTCH_SECURITY_PROTOCOL = settings.HOPSKOTCH_SECURITY_PROTOCOL
 HOPSKOTCH_SASL_MECHANISM = settings.HOPSKOTCH_SASL_MECHANISM
@@ -22,7 +23,7 @@ class Command(BaseCommand):
         self.consumer = Consumer({
             'bootstrap.servers': f'{HOPSKOTCH_SERVER}:{HOPSKOTCH_PORT}',
             'group.id': HOPSKOTCH_GROUP,
-            'auto.offset.reset': 'earliest',
+            'auto.offset.reset': HOPSKOTCH_AUTO_OFFSET_RESET,
             'security.protocol': HOPSKOTCH_SECURITY_PROTOCOL,
             'sasl.mechanism': HOPSKOTCH_SASL_MECHANISM,
             'sasl.username': HOPSKOTCH_SASL_USERNAME,
