@@ -1,3 +1,24 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework import permissions
 
-# Create your views here.
+from skip.models import Event, Target
+from skip.serializers import TargetSerializer, EventSerializer
+
+
+class TargetViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows targets to be viewed or edited.
+    """
+    # TODO: should we order Targets ?
+    queryset = Target.objects.all()
+    serializer_class = TargetSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated]
