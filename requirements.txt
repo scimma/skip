@@ -1,5 +1,5 @@
 confluent_kafka
 fastavro
+psycopg2===2.8.4
 django
 djangorestframework
-psycopg2
