@@ -119,3 +119,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Hopskotch Connection
+
+HOPSKOTCH_SERVER = os.getenv('HOPSKOTCH_SERVER', 'dev.hop.scimma.org')
+HOPSKOTCH_PORT = os.getenv('HOPSKOTCH_PORT', '9092')
+HOPSKOTCH_GROUP = os.getenv('HOPSKOTCH_GROUP', 'skip-test')
+HOPSKOTCH_TOPICS = ['gcn']
+HOPSKOTCH_SECURITY_PROTOCOL = 'sasl_ssl'
+HOPSKOTCH_SASL_MECHANISM = 'PLAIN'
+HOPSKOTCH_SASL_USERNAME = os.getenv('HOPSKOTCH_SASL_USERNAME', 'test')
+HOPSKOTCH_SASL_PASSWORD = os.getenv('HOPSKOTCH_SASL_PASSWORD', '')
+
+
+try:
+    from local_settings import *  # noqa
+except ImportError:
+    pass
