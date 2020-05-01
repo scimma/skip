@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from confluent_kafka import Consumer
+from skip.parser import Parser
 
 
 HOPSKOTCH_SERVER = settings.HOPSKOTCH_SERVER
@@ -45,7 +46,9 @@ class Command(BaseCommand):
             
             decoded_message = msg.value().decode('utf-8')
             packet = json.loads(decoded_message)
-            print(packet)
+            if packet['role'] != 'utility' and packet['role'] != 'test':
+                print(packet)
+
 
 
         self.consumer.close()
