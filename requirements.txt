@@ -2,3 +2,4 @@ confluent_kafka
 fastavro
 django
 djangorestframework
+psycopg2
