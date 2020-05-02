@@ -4,7 +4,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from confluent_kafka import Consumer
-from skip.parser import Parser
 
 
 HOPSKOTCH_CONSUMER_CONFIGURATION = settings.HOPSKOTCH_CONSUMER_CONFIGURATION
