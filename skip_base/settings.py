@@ -130,17 +130,22 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-# Hopskotch Connection
+# Hopskotch Consumer Configuration
 
 HOPSKOTCH_SERVER = os.getenv('HOPSKOTCH_SERVER', 'dev.hop.scimma.org')
 HOPSKOTCH_PORT = os.getenv('HOPSKOTCH_PORT', '9092')
-HOPSKOTCH_GROUP = os.getenv('HOPSKOTCH_GROUP', 'skip-test')
-HOPSKOTCH_AUTO_OFFSET_RESET = 'latest'
+
+HOPSKOTCH_CONSUMER_CONFIGURATION = {
+    'bootstrap.servers': f'{HOPSKOTCH_SERVER}:{HOPSKOTCH_PORT}',
+    'group.id': os.getenv('HOPSKOTCH_GROUP', 'skip-test'),
+    'auto.offset.reset': 'latest',
+    'security.protocol': 'sasl_ssl',
+    'sasl.mechanism': 'PLAIN',
+    'sasl.username': os.getenv('HOPSKOTCH_SASL_USERNAME', 'test'),
+    'sasl.password': os.getenv('HOPSKOTCH_SASL_PASSWORD', '')    
+}
+
 HOPSKOTCH_TOPICS = ['gcn']
-HOPSKOTCH_SECURITY_PROTOCOL = 'sasl_ssl'
-HOPSKOTCH_SASL_MECHANISM = 'PLAIN'
-HOPSKOTCH_SASL_USERNAME = os.getenv('HOPSKOTCH_SASL_USERNAME', 'test')
-HOPSKOTCH_SASL_PASSWORD = os.getenv('HOPSKOTCH_SASL_PASSWORD', '')
 
 
 try:
