@@ -142,7 +142,10 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'security.protocol': 'sasl_ssl',
     'sasl.mechanism': 'PLAIN',
     'sasl.username': os.getenv('HOPSKOTCH_SASL_USERNAME', 'test'),
-    'sasl.password': os.getenv('HOPSKOTCH_SASL_PASSWORD', '')    
+    'sasl.password': os.getenv('HOPSKOTCH_SASL_PASSWORD', '')
+    # system dependency: ssl.ca.location may need to be set
+    # this does not seem to be necessary on Ubuntu. However,
+    # for example on centos7: 'ssl.ca.location': '/etc/ssl/certs/ca-bundle.crt',
 }
 
 HOPSKOTCH_TOPICS = ['gcn']
