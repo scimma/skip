@@ -157,6 +157,7 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
 
 HOPSKOTCH_TOPICS = ['gcn']
 
+# TODO: PARSERS should be renamed to <NAMESPACING>_PARSERS
 PARSERS = {
     'gcn': [
         'skip.parsers.gcn_parser.GCNParser',

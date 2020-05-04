@@ -47,7 +47,8 @@ class Command(BaseCommand):
             if msg.error():
                 print(msg.error())
                 continue
-            
+
+            # TODO: message handling should be moved into method
             topic = msg.topic()
             decoded_message = msg.value().decode('utf-8')
             packet = json.loads(decoded_message)
