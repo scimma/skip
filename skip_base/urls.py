@@ -16,19 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from rest_framework import routers
-
-from skip import views
-
-router = routers.DefaultRouter()
-router.register(r'targets', views.TargetViewSet)
-router.register(r'events', views.EventViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Wire up our API using automatic URL routing.
     # Additionally, we include login URLs for the browsable API.
     path('', include('skip.urls')),
-    path('api/', include(router.urls), name='api_root'),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
