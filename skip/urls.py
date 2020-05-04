@@ -1,15 +1,13 @@
-from django.urls import include, path
+from django.conf.urls import include, url
+from rest_framework.routers import DefaultRouter
 
-from rest_framework import routers
+from skip import views
 
-from . import views
-
-router = routers.DefaultRouter()
+router = DefaultRouter()
 router.register(r'targets', views.TargetViewSet)
 router.register(r'events', views.EventViewSet)
 
+
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('api/', include(router.urls), name='api_root'),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    url('', include((router.urls, 'skip'), namespace='skip')),
 ]

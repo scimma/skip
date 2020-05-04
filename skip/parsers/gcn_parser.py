@@ -35,7 +35,6 @@ class GCNParser(BaseParser):
 
 
     def parse_alert(self, alert, topic):
-        print(alert)
         successful_parsing = False
 
         try:

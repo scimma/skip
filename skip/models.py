@@ -25,3 +25,10 @@ class Event(models.Model):
     message = JSONField()
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['topic'], name='topic_idx'),
+            models.Index(fields=['event_timestamp'], name='event_timestamp_idx'),
+        ]
