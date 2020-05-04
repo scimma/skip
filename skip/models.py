@@ -6,16 +6,16 @@ from django.db import models
 # Create your models here.
 
 
-class Target(models.Model):
-    name = models.CharField(max_length=200)
-    right_ascension = models.FloatField(null=True, blank=True)
-    declination = models.FloatField(null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
+# class Target(models.Model):
+#     name = models.CharField(max_length=200)
+#     right_ascension = models.FloatField(null=True, blank=True)
+#     declination = models.FloatField(null=True, blank=True)
+#     created = models.DateTimeField(auto_now_add=True)
+#     modified = models.DateTimeField(auto_now=True)
 
 
 class Event(models.Model):
-    target_id = models.ForeignKey(Target, on_delete=models.CASCADE)
+    # target_id = models.ForeignKey(Target, on_delete=models.CASCADE)
     event_identifier = models.CharField(max_length=200)
     event_timestamp = models.DateTimeField(null=True, blank=True)
     right_ascension = models.FloatField(null=True, blank=True)

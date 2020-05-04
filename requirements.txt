@@ -3,3 +3,4 @@ fastavro
 psycopg2===2.8.4
 django
 djangorestframework
+django-extensions

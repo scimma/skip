@@ -28,11 +28,14 @@ class GCNParser(BaseParser):
             ra = coordinates['Value2']['C1']
             dec = coordinates['Value2']['C2']
             return ra, dec
-        except AttributeError:
-            raise Exception('Unable to parse coordinates')
+        except (AttributeError, KeyError):
+            # TODO: Alerts of role `utility` appear to have a different format--should be explored further rather than 
+            # shunted off to the DefaultParser
+            raise ParseError('Unable to parse coordinates')
 
 
     def parse_alert(self, alert, topic):
+        print(alert)
         successful_parsing = False
 
         try:
@@ -40,8 +43,9 @@ class GCNParser(BaseParser):
             event_identifier = alert['ivorn']
             ra, dec = self.parse_coordinates(alert)
             # successful_parsing = True
-        except AttributeError:
-            raise ParseError()
+        except (AttributeError, KeyError, ParseError):
+            # TODO: How do we want to handle cascading exceptions?
+            raise ParseError('Unable to parse alert')
 
         parsed_alert = {
             'role': role,
@@ -57,7 +61,5 @@ class GCNParser(BaseParser):
         
 
     def save_parsed_alert(self, parsed_alert):
-        print(parsed_alert)
-        # print(**parsed_alert)
         event, created = Event.objects.get_or_create(**parsed_alert)
         return created

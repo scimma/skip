@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+import json
+
+from skip.models import Event
 
 
 class BaseParser(ABC):
