@@ -147,6 +147,13 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
 
 HOPSKOTCH_TOPICS = ['gcn']
 
+PARSERS = {
+    'gcn': [
+        'skip.parsers.gcn_parser.GCNParser',
+        'skip.parsers.base_parser.DefaultParser'
+    ]
+}
+
 
 try:
     from local_settings import *  # noqa
