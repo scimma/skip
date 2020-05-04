@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_extensions',
     'skip'
 ]
 
@@ -80,7 +81,7 @@ DATABASES = {
         'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
         'NAME': os.getenv('DB_NAME', 'skip'),
         'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASS', ''),
+        'PASSWORD': os.getenv('DB_PASS', 'postgres'),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
         'PORT': os.getenv('DB_PORT', '5432'),
     },
@@ -149,6 +150,13 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
 }
 
 HOPSKOTCH_TOPICS = ['gcn']
+
+PARSERS = {
+    'gcn': [
+        'skip.parsers.gcn_parser.GCNParser',
+        'skip.parsers.base_parser.DefaultParser'
+    ]
+}
 
 
 try:
