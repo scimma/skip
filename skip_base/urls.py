@@ -27,6 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Wire up our API using automatic URL routing.
     # Additionally, we include login URLs for the browsable API.
-    path('api/', include(router.urls)),
+    path('', views.index, name='index'),
+    path('api/', include(router.urls), name='api_root'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
