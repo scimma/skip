@@ -1,4 +1,4 @@
-from skip.models import Alert, Target
+from skip.models import Alert, Target, Topic
 from rest_framework import serializers
 
 
@@ -23,3 +23,9 @@ class AlertSerializer(serializers.ModelSerializer):
                   'message',
                   'created',
                   'modified']
+
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topic
+        fields = ['name']

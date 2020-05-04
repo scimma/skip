@@ -2,8 +2,8 @@ from rest_framework import viewsets
 from rest_framework import permissions
 
 from skip.filters import AlertFilter
-from skip.models import Alert, Target
-from skip.serializers import TargetSerializer, AlertSerializer
+from skip.models import Alert, Target, Topic
+from skip.serializers import TargetSerializer, AlertSerializer, TopicSerializer
 
 
 class TargetViewSet(viewsets.ModelViewSet):
@@ -24,3 +24,9 @@ class AlertViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Alert.objects.all()
     serializer_class = AlertSerializer
+
+
+class TopicViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import json
 
-from skip.models import Alert
+from skip.models import Alert, Topic
 
 
 class BaseParser(ABC):
