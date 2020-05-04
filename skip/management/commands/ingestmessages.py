@@ -50,6 +50,7 @@ class Command(BaseCommand):
 
             # TODO: message handling should be moved into method
             topic = msg.topic()
+            
             decoded_message = msg.value().decode('utf-8')
             packet = json.loads(decoded_message)
 
@@ -58,8 +59,8 @@ class Command(BaseCommand):
                 saved = False
                 try:
                     parser = parser_class()
-                    parsed_alert = parser.parse_alert(packet, topic)
-                    saved = parser.save_parsed_alert(parsed_alert)
+                    parsed_alert = parser.parse_alert(packet)
+                    saved = parser.save_parsed_alert(parsed_alert, topic)
                 except ParseError:
                     continue
                 print(saved)

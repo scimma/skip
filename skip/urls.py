@@ -5,7 +5,7 @@ from skip import views
 
 router = DefaultRouter()
 router.register(r'targets', views.TargetViewSet)
-router.register(r'events', views.EventViewSet)
+router.register(r'alerts', views.AlertViewSet)
 
 
 urlpatterns = [

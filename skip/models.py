@@ -14,14 +14,18 @@ class Target(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
 
-class Event(models.Model):
+class Topic(models.Model):
+    name = models.CharField(max_length=50)
+
+
+class Alert(models.Model):
     # target_id = models.ForeignKey(Target, on_delete=models.CASCADE)
-    event_identifier = models.CharField(max_length=200)
-    event_timestamp = models.DateTimeField(null=True, blank=True)
+    topic_id = models.ForeignKey(Topic, on_delete=models.PROTECT)
+    alert_identifier = models.CharField(max_length=200)
+    alert_timestamp = models.DateTimeField(null=True, blank=True)
     right_ascension = models.FloatField(null=True, blank=True)
     declination = models.FloatField(null=True, blank=True)
     role = models.CharField(max_length=50, null=True, blank=True)
-    topic = models.CharField(max_length=50)
     message = JSONField()
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -29,6 +33,5 @@ class Event(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['topic'], name='topic_idx'),
-            models.Index(fields=['event_timestamp'], name='event_timestamp_idx'),
+            models.Index(fields=['alert_timestamp'], name='alert_timestamp_idx'),
         ]

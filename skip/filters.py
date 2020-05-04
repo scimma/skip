@@ -1,12 +1,11 @@
 from django_filters import rest_framework as filters
 
 
-class EventFilter(filters.FilterSet):
-    event_timestamp = filters.DateTimeFromToRangeFilter()
-    topic = filters.CharFilter()
+class AlertFilter(filters.FilterSet):
+    alert_timestamp = filters.DateTimeFromToRangeFilter()
     role = filters.CharFilter()
     ordering = filters.OrderingFilter(
         fields=(
-            ('event_timestamp', 'event_timestamp')
+            ('alert_timestamp', 'alert_timestamp')
         )
     )
