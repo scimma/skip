@@ -5,6 +5,7 @@ from skip.filters import EventFilter
 from skip.models import Event, Target
 from skip.serializers import TargetSerializer, EventSerializer
 
+
 class TargetViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows targets to be viewed or edited.
