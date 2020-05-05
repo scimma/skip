@@ -1,3 +1,5 @@
+from django.contrib.gis.geos import Point
+
 from skip.exceptions import ParseError
 from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
@@ -49,8 +51,9 @@ class GCNParser(BaseParser):
         parsed_alert = {
             'role': role,
             'alert_identifier': alert_identifier,
-            'right_ascension': ra,
-            'declination': dec,
+            'coordinates': Point(float(ra), float(dec), srid=4035),
+            # 'right_ascension': ra,
+            # 'declination': dec,
             'message': alert
         }
 

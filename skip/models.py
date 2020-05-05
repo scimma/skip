@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
@@ -23,8 +24,9 @@ class Alert(models.Model):
     topic_id = models.ForeignKey(Topic, on_delete=models.PROTECT)
     alert_identifier = models.CharField(max_length=200)
     alert_timestamp = models.DateTimeField(null=True, blank=True)
-    right_ascension = models.FloatField(null=True, blank=True)
-    declination = models.FloatField(null=True, blank=True)
+    coordinates = gis_models.PointField(null=True, blank=True)
+    # right_ascension = models.FloatField(null=True, blank=True)
+    # declination = models.FloatField(null=True, blank=True)
     role = models.CharField(max_length=50, null=True, blank=True)
     message = JSONField()
     created = models.DateTimeField(auto_now_add=True)

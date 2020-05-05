@@ -1,7 +1,8 @@
 confluent_kafka
-fastavro
-psycopg2===2.8.4
 django
-djangorestframework
 django-extensions
 django-filter
+djangorestframework
+djangorestframework-gis
+fastavro
+psycopg2===2.8.4
