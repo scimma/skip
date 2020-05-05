@@ -31,7 +31,7 @@ class AlertSerializer(serializers.ModelSerializer):
         return (obj.coordinates.x, obj.coordinates.y)
 
     def get_topic(self, obj):
-        return Topic.objects.get(pk=obj.topic_id.id).name
+        return Topic.objects.get(pk=obj.topic.id).name
 
 
 class TopicSerializer(serializers.ModelSerializer):

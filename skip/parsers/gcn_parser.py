@@ -63,6 +63,6 @@ class GCNParser(BaseParser):
 
     def save_parsed_alert(self, parsed_alert, topic_name):
         topic, created = Topic.objects.get_or_create(name=topic_name)
-        parsed_alert['topic_id'] = topic
+        parsed_alert['topic'] = topic
         alert, created = Alert.objects.get_or_create(**parsed_alert)
         return created

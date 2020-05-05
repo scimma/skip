@@ -6,11 +6,15 @@ class AlertFilter(filters.FilterSet):
                                      help_text='RA, Dec, Radius (degrees)')
     alert_timestamp = filters.DateTimeFromToRangeFilter()
     role = filters.CharFilter()
+    topic = filters.CharFilter(method='filter_topic')
     ordering = filters.OrderingFilter(
         fields=(
             ('alert_timestamp', 'alert_timestamp')
         )
     )
+
+    def filter_topic(self, queryset, name, value):
+        return queryset.filter(topic__name=value)
 
     def filter_cone_search(self, queryset, name, value):
         """
