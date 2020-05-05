@@ -12,16 +12,26 @@ class TargetSerializer(serializers.ModelSerializer):
 #   see https://www.django-rest-framework.org/api-guide/serializers/#specifying-which-fields-to-include
 # TODO: ?consider serializers.HyperlinkedModelSerializer??
 class AlertSerializer(serializers.ModelSerializer):
+    location = serializers.SerializerMethodField()
+    # topic = serializers.SerializerMethodField()
+
     class Meta:
         model = Alert
         fields = [  # 'target_id',  
                   'alert_identifier',
                   'alert_timestamp',
-                  'coordinates',
+                #   'topic',
+                  'location',
                   'role',
                   'message',
                   'created',
                   'modified']
+
+    def get_location(self, obj):
+        return (obj.coordinates.x, obj.coordinates.y)
+
+    # def get_topic(self, obj):
+    #     return Topic.objects.first(pk=obj.topic_id)
 
 
 class TopicSerializer(serializers.ModelSerializer):

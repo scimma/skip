@@ -5,10 +5,10 @@ Django REST api to Hop Alerts Database
 ### Quickstart
 
 ##### Using Django `runserver` (development only):
-First, you'll need a PostgreSQL server listening at port 5432:
+First, you'll need a PostGIS server listening at port 5432:
 ```bash
-docker create --name skip-postgres -e POSTGRES_DB=skip -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -p 5432:5432 postgres:11.1
-docker start skip-postgres
+docker create --name skip-gis -e POSTGRES_DB=skip -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -p 5432:5432 mdillon/postgis
+docker start skip-gis
 ```
 Second, set up the database tables:
 ```bash
