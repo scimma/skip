@@ -18,6 +18,9 @@ class Target(models.Model):
 class Topic(models.Model):
     name = models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.name
+
 
 class Alert(models.Model):
     # target_id = models.ForeignKey(Target, on_delete=models.CASCADE)

@@ -1,20 +1,22 @@
 from django_filters import rest_framework as filters
 
+from skip.models import Topic
+
 
 class AlertFilter(filters.FilterSet):
     cone_search = filters.CharFilter(method='filter_cone_search', label='Cone Search', 
                                      help_text='RA, Dec, Radius (degrees)')
     alert_timestamp = filters.DateTimeFromToRangeFilter()
     role = filters.CharFilter()
-    topic = filters.CharFilter(method='filter_topic')
+    topic = filters.ModelChoiceFilter(queryset=Topic.objects.all())
     ordering = filters.OrderingFilter(
         fields=(
             ('alert_timestamp', 'alert_timestamp')
         )
     )
 
-    def filter_topic(self, queryset, name, value):
-        return queryset.filter(topic__name=value)
+    # def filter_topic(self, queryset, name, value):
+    #     return queryset.filter(topic__name=value)
 
     def filter_cone_search(self, queryset, name, value):
         """
