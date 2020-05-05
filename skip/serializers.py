@@ -13,14 +13,14 @@ class TargetSerializer(serializers.ModelSerializer):
 # TODO: ?consider serializers.HyperlinkedModelSerializer??
 class AlertSerializer(serializers.ModelSerializer):
     location = serializers.SerializerMethodField()
-    # topic = serializers.SerializerMethodField()
+    topic = serializers.SerializerMethodField()
 
     class Meta:
         model = Alert
         fields = [  # 'target_id',  
                   'alert_identifier',
                   'alert_timestamp',
-                #   'topic',
+                  'topic',
                   'location',
                   'role',
                   'message',
@@ -30,8 +30,8 @@ class AlertSerializer(serializers.ModelSerializer):
     def get_location(self, obj):
         return (obj.coordinates.x, obj.coordinates.y)
 
-    # def get_topic(self, obj):
-    #     return Topic.objects.first(pk=obj.topic_id)
+    def get_topic(self, obj):
+        return Topic.objects.get(pk=obj.topic_id.id).name
 
 
 class TopicSerializer(serializers.ModelSerializer):

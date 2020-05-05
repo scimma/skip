@@ -21,7 +21,7 @@ class Topic(models.Model):
 
 class Alert(models.Model):
     # target_id = models.ForeignKey(Target, on_delete=models.CASCADE)
-    topic_id = models.ForeignKey(Topic, on_delete=models.PROTECT)
+    topic = models.ForeignKey(Topic, on_delete=models.PROTECT)
     alert_identifier = models.CharField(max_length=200)
     alert_timestamp = models.DateTimeField(null=True, blank=True)
     coordinates = gis_models.PointField(null=True, blank=True)
