@@ -3,6 +3,6 @@ django
 django-extensions
 django-filter
 djangorestframework
-djangorestframework-gis
 fastavro
 psycopg2===2.8.4
+hop-client
