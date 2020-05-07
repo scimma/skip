@@ -19,3 +19,26 @@ Third, choose a port (here we've choosen 8989) and run the server
 ./manage.py runserver 8989 &
 ```
 `skip` is at http://localhost:8989
+
+
+##### Using docker-compose
+
+```
+docker-compose build
+docker-compose up
+```
+
+Next, create a superuser:
+
+```
+docker exec -it skip /bin/bash
+python manage.py createsuperuser
+# Follow prompts to create user
+```
+
+Navigate to `localhost:8080` to view the API.
+
+###### Troubleshooting
+
+If you're coming across connection errors, make sure you aren't inadvertently using bad values from your `local_settings.py`, and 
+confirm that there are no conflicting docker containers exposing 5432 or 8080.
