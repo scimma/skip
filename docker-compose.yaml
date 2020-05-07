@@ -1,21 +1,35 @@
 version: '3.0'
 services:
+  migrate:
+    build: .
+    entrypoint: ["python", "manage.py", "migrate"]
+    container_name: skip-migrate
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
   web:
     build: .
     entrypoint: ["/usr/local/bin/gunicorn", "skip_base.wsgi:application", "--bind=0.0.0.0:8080"]
     container_name: skip
+    environment:
+      - DB_HOST=db
     ports:
       - "8080:8080"
     depends_on:
       - db
+      - migrate
   ingest:
     build: .
     container_name: skip-ingest
     entrypoint: ["python", "manage.py", "ingestmessages"]
+    environment:
+      - DB_HOST=db
     depends_on:
       - db
+      - migrate
   db:
-    image: postgres:12.2-alpine
+    image: mdillon/postgis
     container_name: skip-db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
