@@ -31,7 +31,6 @@ def get_parser_classes(topic):
 class Command(BaseCommand):
 
     def __init__(self, *args, **kwargs):
-        print(HOPSKOTCH_CONSUMER_CONFIGURATION)
         self.consumer = Consumer(HOPSKOTCH_CONSUMER_CONFIGURATION)
 
     def handle(self, *args, **options):

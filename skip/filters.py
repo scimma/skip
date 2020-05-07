@@ -15,9 +15,6 @@ class AlertFilter(filters.FilterSet):
         )
     )
 
-    # def filter_topic(self, queryset, name, value):
-    #     return queryset.filter(topic__name=value)
-
     def filter_cone_search(self, queryset, name, value):
         """
         Executes cone search by annotating each target with separation distance from either the specified RA/Dec or
