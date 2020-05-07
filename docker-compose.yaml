@@ -1,0 +1,31 @@
+version: '3.0'
+services:
+  web:
+    build: .
+    entrypoint: ["/usr/local/bin/gunicorn", "skip_base.wsgi:application", "--bind=0.0.0.0:8080"]
+    container_name: skip
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+  ingest:
+    build: .
+    container_name: skip-ingest
+    entrypoint: ["python", "manage.py", "ingestmessages"]
+    depends_on:
+      - db
+  db:
+    image: postgres:12.2-alpine
+    container_name: skip-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=skip
+
+volumes:
+  postgres_data:
+  shared:
