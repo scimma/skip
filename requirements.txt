@@ -6,3 +6,4 @@ djangorestframework
 fastavro
 psycopg2===2.8.4
 hop-client
+whitenoise

@@ -28,6 +28,8 @@ class AlertSerializer(serializers.ModelSerializer):
                   'modified']
 
     def get_location(self, obj):
+        if not obj.coordinates:
+            return
         return (obj.coordinates.x, obj.coordinates.y)
 
     def get_topic(self, obj):
