@@ -1,9 +1,9 @@
 from rest_framework import viewsets
 from rest_framework import permissions
 
-from skip.filters import EventFilter
-from skip.models import Event, Target
-from skip.serializers import TargetSerializer, EventSerializer
+from skip.filters import AlertFilter
+from skip.models import Alert, Target, Topic
+from skip.serializers import TargetSerializer, AlertSerializer, TopicSerializer
 
 
 class TargetViewSet(viewsets.ModelViewSet):
@@ -16,11 +16,17 @@ class TargetViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class EventViewSet(viewsets.ModelViewSet):
+class AlertViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows groups to be viewed or edited.
     """
-    filterset_class = EventFilter
+    filterset_class = AlertFilter
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    queryset = Alert.objects.all()
+    serializer_class = AlertSerializer
+
+
+class TopicViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer

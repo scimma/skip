@@ -1,4 +1,4 @@
-from skip.models import Event, Target
+from skip.models import Alert, Target, Topic
 from rest_framework import serializers
 
 
@@ -11,16 +11,32 @@ class TargetSerializer(serializers.ModelSerializer):
 # TOOD: use field exclusion instead of inclusion:
 #   see https://www.django-rest-framework.org/api-guide/serializers/#specifying-which-fields-to-include
 # TODO: ?consider serializers.HyperlinkedModelSerializer??
-class EventSerializer(serializers.ModelSerializer):
+class AlertSerializer(serializers.ModelSerializer):
+    location = serializers.SerializerMethodField()
+    topic = serializers.SerializerMethodField()
+
     class Meta:
-        model = Event
+        model = Alert
         fields = [  # 'target_id',  
-                  'event_identifier',
-                  'event_timestamp',
-                  'right_ascension',
-                  'declination',
-                  'role',
+                  'alert_identifier',
+                  'alert_timestamp',
                   'topic',
+                  'location',
+                  'role',
                   'message',
                   'created',
                   'modified']
+
+    def get_location(self, obj):
+        if not obj.coordinates:
+            return
+        return (obj.coordinates.x, obj.coordinates.y)
+
+    def get_topic(self, obj):
+        return Topic.objects.get(pk=obj.topic.id).name
+
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topic
+        fields = ['name']

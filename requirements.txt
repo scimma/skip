@@ -1,7 +1,9 @@
 confluent_kafka
-fastavro
-psycopg2===2.8.4
 django
-djangorestframework
 django-extensions
 django-filter
+djangorestframework
+fastavro
+psycopg2===2.8.4
+hop-client
+whitenoise

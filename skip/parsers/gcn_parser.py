@@ -1,5 +1,7 @@
+from django.contrib.gis.geos import Point
+
 from skip.exceptions import ParseError
-from skip.models import Event
+from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
 
 
@@ -34,12 +36,12 @@ class GCNParser(BaseParser):
             raise ParseError('Unable to parse coordinates')
 
 
-    def parse_alert(self, alert, topic):
+    def parse_alert(self, alert):
         successful_parsing = False
 
         try:
             role = alert['role']
-            event_identifier = alert['ivorn']
+            alert_identifier = alert['ivorn']
             ra, dec = self.parse_coordinates(alert)
             # successful_parsing = True
         except (AttributeError, KeyError, ParseError):
@@ -48,10 +50,10 @@ class GCNParser(BaseParser):
 
         parsed_alert = {
             'role': role,
-            'event_identifier': event_identifier,
-            'topic': topic,
-            'right_ascension': ra,
-            'declination': dec,
+            'alert_identifier': alert_identifier,
+            'coordinates': Point(float(ra), float(dec), srid=4035),
+            # 'right_ascension': ra,
+            # 'declination': dec,
             'message': alert
         }
 
@@ -59,6 +61,8 @@ class GCNParser(BaseParser):
         # return parsed_alert, successful_parsing
         
 
-    def save_parsed_alert(self, parsed_alert):
-        event, created = Event.objects.get_or_create(**parsed_alert)
+    def save_parsed_alert(self, parsed_alert, topic_name):
+        topic, created = Topic.objects.get_or_create(name=topic_name)
+        parsed_alert['topic'] = topic
+        alert, created = Alert.objects.get_or_create(**parsed_alert)
         return created
