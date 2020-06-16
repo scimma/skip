@@ -25,6 +25,7 @@ services:
     entrypoint: ["python", "manage.py", "ingestmessages"]
     environment:
       - DB_HOST=db
+      - PYTHONUNBUFFERED=1
     depends_on:
       - db
       - migrate
