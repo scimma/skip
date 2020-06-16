@@ -1,9 +1,11 @@
 confluent_kafka
 django
+django-cors-headers
 django-extensions
 django-filter
 djangorestframework
 fastavro
 psycopg2===2.8.4
+python-dateutil
 hop-client
 whitenoise

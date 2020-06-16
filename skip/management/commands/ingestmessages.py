@@ -1,5 +1,6 @@
 from importlib import import_module
 import json
+import time
 
 from confluent_kafka import Consumer
 from django.conf import settings
@@ -34,7 +35,6 @@ class Command(BaseCommand):
         self.consumer = Consumer(HOPSKOTCH_CONSUMER_CONFIGURATION)
 
     def handle(self, *args, **options):
-
         self.consumer.subscribe(HOPSKOTCH_TOPICS)
         roles = {}
 

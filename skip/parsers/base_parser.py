@@ -21,6 +21,7 @@ class DefaultParser(BaseParser):
         return alert
 
     def save_parsed_alert(self, parsed_alert, topic_name):
+        print(f'saved {topic_name} alert as default alert')
         topic, created = Topic.objects.get_or_create(name=topic_name)
         alert = Alert.objects.create(message=json.dumps(parsed_alert), topic=topic)
-        return alert, True
+        return True
