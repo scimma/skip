@@ -25,23 +25,32 @@ SECRET_KEY = 't8oh)-ej%uc!&!p&0ugyy8oxgu3=w(yy$68++hc7we#g@j7m+c'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
+    'django_extensions',
+    'django_filters',
+    'skip',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,12 +78,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'skip_base.wsgi.application'
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
+    'postgres': {
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME', 'skip'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASS', 'postgres'),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    },
     'default': {
+        'ENGINE': os.getenv('DB_ENGINE', 'django.contrib.gis.db.backends.postgis'),
+        'NAME': os.getenv('DB_NAME', 'skip'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASS', 'postgres'),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    },
+    'sqlite3': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
@@ -118,3 +145,57 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '_static')
+
+# Django REST Framework configuration
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # TODO: BasicAuthentication has not been included--it may need to be included for running tests
+        # TODO: TokenAuthentication may need to be restricted for certain views, and same for SessionAuthentication
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+
+# Hopskotch Consumer Configuration
+
+HOPSKOTCH_SERVER = os.getenv('HOPSKOTCH_SERVER', 'dev.hop.scimma.org')
+HOPSKOTCH_PORT = os.getenv('HOPSKOTCH_PORT', '9092')
+
+HOPSKOTCH_CONSUMER_CONFIGURATION = {
+    'bootstrap.servers': f'{HOPSKOTCH_SERVER}:{HOPSKOTCH_PORT}',
+    'group.id': os.getenv('HOPSKOTCH_GROUP', 'skip-test'),
+    'auto.offset.reset': 'latest',
+    'security.protocol': 'sasl_ssl',
+    'sasl.mechanism': 'PLAIN',
+    'sasl.username': os.getenv('HOPSKOTCH_SASL_USERNAME', 'test'),
+    'sasl.password': os.getenv('HOPSKOTCH_SASL_PASSWORD', '')
+    # system dependency: ssl.ca.location may need to be set
+    # this does not seem to be necessary on Ubuntu. However,
+    # for example on centos7: 'ssl.ca.location': '/etc/ssl/certs/ca-bundle.crt',
+}
+
+HOPSKOTCH_TOPICS = ['gcn', 'lvc-counterpart']
+
+# TODO: PARSERS should be renamed to <NAMESPACING>_PARSERS
+PARSERS = {
+    'gcn': [
+        'skip.parsers.gcn_parser.GCNParser',
+        'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
+        'skip.parsers.base_parser.DefaultParser'
+    ],
+    'lvc-counterpart': [
+        'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
+        'skip.parsers.base_parser.DefaultParser'
+    ]
+}
+
+
+try:
+    from local_settings import *  # noqa
+except ImportError:
+    pass
