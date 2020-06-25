@@ -1,0 +1,41 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+    
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure AWScredentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: AWS Login
+        uses: aws-actions/amazon-ecr-login@v1
+#         with:
+          # A comma-delimited list of AWS account IDs that are associated with the ECR registries. If you do not specify a registry, the default ECR registry is assumed.
+#           registries: # optional
+
+      - name: Build, tag, and push image
+        env:
+          ECR_REGISTRY: 585193511743.dkr.ecr.us-west-2.amazonaws.com
+          ECR_REPOSITORY: skip
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t REGISTRY/REPOSITORY:IMAGE_TAG .
+          docker push REGISTRY/REPOSITORY:IMAGE_TAG
+
+      - name: Logout
+        if: always()
+        run: docker logout ${{ steps.login-ecr.outputs.registry }}
