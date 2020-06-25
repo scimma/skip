@@ -28,7 +28,6 @@ jobs:
 #           registries: # optional
 
       - name: Build, tag, and push image
-        uses: actions/checkout@v2
         env:
           ECR_REGISTRY: 585193511743.dkr.ecr.us-west-2.amazonaws.com
           ECR_REPOSITORY: skip
