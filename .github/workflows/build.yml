@@ -26,14 +26,11 @@ jobs:
 
       - name: AWS Login
         uses: aws-actions/amazon-ecr-login@v1
-#         with:
-          # A comma-delimited list of AWS account IDs that are associated with the ECR registries. If you do not specify a registry, the default ECR registry is assumed.
-#           registries: # optional
 
       - name: Build, tag, and push image
         env:
           ECR_REGISTRY: 585193511743.dkr.ecr.us-west-2.amazonaws.com
-          ECR_REPOSITORY: skip
+          ECR_REPOSITORY: skip-web
           IMAGE_TAG: ${{ github.sha }}
         run: |
           ls
