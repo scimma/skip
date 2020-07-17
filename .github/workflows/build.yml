@@ -30,7 +30,7 @@ jobs:
       - name: Build, tag, and push image
         env:
           ECR_REGISTRY: 585193511743.dkr.ecr.us-west-2.amazonaws.com
-          ECR_REPOSITORY: skip-web
+          ECR_REPOSITORY: scimma/skip-web
           IMAGE_TAG: ${{ github.sha }}
         run: |
           ls
