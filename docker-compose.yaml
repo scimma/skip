@@ -1,46 +1,25 @@
 version: '3.0'
 services:
   migrate:
-    build: .
+    image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
     entrypoint: ["python", "manage.py", "migrate"]
     container_name: skip-migrate
-    environment:
-      - DB_HOST=db
-    depends_on:
-      - db
   web:
-    build: .
+    image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
     entrypoint: ["/usr/local/bin/gunicorn", "skip_base.wsgi:application", "--bind=0.0.0.0:8080"]
     container_name: skip
-    environment:
-      - DB_HOST=db
     ports:
       - "80:8080"
     depends_on:
-      - db
       - migrate
   ingest:
-    build: .
+    image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
     container_name: skip-ingest
     entrypoint: ["python", "manage.py", "ingestmessages"]
     environment:
-      - DB_HOST=db
       - PYTHONUNBUFFERED=1
     depends_on:
-      - db
       - migrate
-  db:
-    image: mdillon/postgis
-    container_name: skip-db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=skip
 
 volumes:
-  postgres_data:
   shared:
