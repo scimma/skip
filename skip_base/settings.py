@@ -11,6 +11,21 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import boto3
+
+
+def get_secret(secret_name):
+    secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
+    return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
+
+
+def get_rds_db(db_instance_id):
+    rds = boto3.client('rds', region_name='us-west-2')
+    resp = rds.describe_db_instances(Filters=[
+        {'Name': 'db-instance-id', 'Values': [db_instance_id]},
+    ])
+    return resp['DBInstances'][0]
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -84,27 +99,16 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+rds_db = get_rds_db('skip-postgres')
 DATABASES = {
-    'postgres': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME', 'skip'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASS', 'postgres'),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    },
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.contrib.gis.db.backends.postgis'),
-        'NAME': os.getenv('DB_NAME', 'skip'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASS', 'postgres'),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': rds_db['DBName'],
+        'USER': rds_db['MasterUsername'],
+        'PASSWORD': get_secret('skip-db-password'),
+        'HOST': rds_db['Endpoint']['Address'],
+        'PORT': rds_db['Endpoint']['Port'],
     },
-    'sqlite3': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
 }
 
 
