@@ -1,8 +1,8 @@
-# hop-alert-api-app
+# Skip
 
 Django REST api to Hop Alerts Database
 
-### Quickstart
+## Local Development Quickstart
 
 ##### Using Django `runserver` (development only):
 First, you'll need a PostGIS server listening at port 5432:
@@ -42,3 +42,12 @@ Navigate to `localhost:8080` to view the API.
 
 If you're coming across connection errors, make sure you aren't inadvertently using bad values from your `local_settings.py`, and 
 confirm that there are no conflicting docker containers exposing 5432 or 8080.
+
+## AWS Deployment
+For the time being, on the terraformed ec2 instance:
+```bash
+sudo yum install git
+git clone https://github.com/scimma/skip.git || git pull origin master
+$(aws ecr get-login --no-include-email --region us-west-2)
+docker-compose up
+```
