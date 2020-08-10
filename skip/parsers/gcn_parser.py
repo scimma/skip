@@ -56,9 +56,9 @@ class GCNParser(BaseParser):
             'role': role,
             'alert_timestamp': alert_timestamp,
             'alert_identifier': alert_identifier,
-            # 'coordinates': Point(float(ra), float(dec), srid=4035),
-            'right_ascension': ra,
-            'declination': dec,
+            'coordinates': Point(float(ra), float(dec), srid=4035),
+            # 'right_ascension': ra,
+            # 'declination': dec,
             'message': alert
         }
 
