@@ -39,14 +39,12 @@ class GCNParser(BaseParser):
 
 
     def parse_alert(self, alert):
-        successful_parsing = False
 
         try:
             role = alert['role']
             alert_identifier = alert['ivorn']
             alert_timestamp = parse(alert['Who']['Date'])
             ra, dec = self.parse_coordinates(alert)
-            # successful_parsing = True
         except (AttributeError, KeyError, ParseError) as e:
             print(e)
             # TODO: How do we want to handle cascading exceptions?
@@ -56,14 +54,11 @@ class GCNParser(BaseParser):
             'role': role,
             'alert_timestamp': alert_timestamp,
             'alert_identifier': alert_identifier,
-            # 'coordinates': Point(float(ra), float(dec), srid=4035),
-            'right_ascension': ra,
-            'declination': dec,
+            'coordinates': Point(float(ra), float(dec), srid=4035),
             'message': alert
         }
 
         return parsed_alert
-        # return parsed_alert, successful_parsing
 
     def save_parsed_alert(self, parsed_alert, topic_name):
         topic, created = Topic.objects.get_or_create(name=topic_name)

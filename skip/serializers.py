@@ -8,11 +8,9 @@ class TargetSerializer(serializers.ModelSerializer):
         fields = ['name', 'right_ascension', 'declination', 'created', 'modified']
 
 
-# TOOD: use field exclusion instead of inclusion:
-#   see https://www.django-rest-framework.org/api-guide/serializers/#specifying-which-fields-to-include
-# TODO: ?consider serializers.HyperlinkedModelSerializer??
 class AlertSerializer(serializers.ModelSerializer):
-    # location = serializers.SerializerMethodField()
+    right_ascension = serializers.SerializerMethodField()
+    declination = serializers.SerializerMethodField()
     topic = serializers.SerializerMethodField()
 
     class Meta:
@@ -30,13 +28,13 @@ class AlertSerializer(serializers.ModelSerializer):
                   'created',
                   'modified']
 
-    # def get_location(self, obj):
-    #     if not obj.coordinates:
-    #         return
-    #     return (obj.coordinates.x, obj.coordinates.y)
+    def get_right_ascension(self, obj):
+        if obj.coordinates:
+            return obj.coordinates.x
 
-    def get_target(self, obj):
-        return Target.objects.get(pk=obj.target.id).name
+    def get_declination(self, obj):
+        if obj.coordinates:
+            return obj.coordinates.y
 
     def get_topic(self, obj):
         return Topic.objects.get(pk=obj.topic.id).name

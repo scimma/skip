@@ -102,7 +102,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 rds_db = get_rds_db('skip-postgres')
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+        'ENGINE': os.getenv('DB_ENGINE', 'django.contrib.gis.db.backends.postgis'),
         'NAME': rds_db['DBName'],
         'USER': rds_db['MasterUsername'],
         'PASSWORD': get_secret('skip-db-password'),
