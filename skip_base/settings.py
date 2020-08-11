@@ -184,7 +184,7 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     # for example on centos7: 'ssl.ca.location': '/etc/ssl/certs/ca-bundle.crt',
 }
 
-HOPSKOTCH_TOPICS = ['gcn', 'lvc-counterpart']
+HOPSKOTCH_TOPICS = ['gcn', 'lvc-counterpart', 'tns']
 
 # TODO: PARSERS should be renamed to <NAMESPACING>_PARSERS
 PARSERS = {
@@ -195,6 +195,10 @@ PARSERS = {
     ],
     'lvc-counterpart': [
         'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
+        'skip.parsers.base_parser.DefaultParser'
+    ],
+    'tns': [
+        'skip.parsers.tns_parser.TNSParser',
         'skip.parsers.base_parser.DefaultParser'
     ]
 }
