@@ -26,14 +26,6 @@ class AlertFilter(filters.FilterSet):
     )
 
     def filter_cone_search(self, queryset, name, value):
-        """
-        Executes cone search by annotating each target with separation distance from either the specified RA/Dec or
-        the RA/Dec of the specified target. Formula is from Wikipedia: https://en.wikipedia.org/wiki/Angular_distance
-        The result is converted to radians.
-
-        Cone search is preceded by a square search to reduce the search radius before annotating the queryset, in
-        order to make the query faster.
-        """
         ra, dec, radius = value.split(',')
 
         ra = float(ra)

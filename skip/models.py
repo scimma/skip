@@ -27,8 +27,6 @@ class Alert(models.Model):
     alert_identifier = models.CharField(max_length=200)
     alert_timestamp = models.DateTimeField(null=True, blank=True)
     coordinates = gis_models.PointField(null=True, blank=True)
-    # right_ascension = models.FloatField(null=True, blank=True)
-    # declination = models.FloatField(null=True, blank=True)
     role = models.CharField(max_length=50, null=True, blank=True)
     message = models.JSONField()
     created = models.DateTimeField(auto_now_add=True)
