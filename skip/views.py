@@ -1,5 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import pagination
 from rest_framework import permissions
+from rest_framework import viewsets
 
 from skip.filters import AlertFilter
 from skip.models import Alert, Target, Topic
@@ -14,6 +15,7 @@ class TargetViewSet(viewsets.ModelViewSet):
     queryset = Target.objects.all()
     serializer_class = TargetSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = pagination.PageNumberPagination
 
 
 class AlertViewSet(viewsets.ModelViewSet):
