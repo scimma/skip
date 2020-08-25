@@ -80,6 +80,9 @@ docs/_build/
 # PyCharm
 .idea/
 
+# emacs
+*~
+
 # Linting
 .flake8
 
