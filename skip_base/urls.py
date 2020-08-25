@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.urls import path
 
 from skip_base.views import Index
 
@@ -25,5 +26,6 @@ urlpatterns = [
     url('^admin/', admin.site.urls),
     url('^api/', include('skip.urls')),
     url('^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url('^', Index.as_view(), name='index'),
+    path('django_plotly_dash/', include('django_plotly_dash.urls')),
+    url('^', include('skip_dpd.urls', namespace='skip-dash')),
 ]
