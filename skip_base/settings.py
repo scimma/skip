@@ -207,6 +207,7 @@ PARSERS = {
     ]
 }
 
+SKIP_API_CLIENT = 'skip.skip_api_client.SkipORMClient'
 SKIP_API_KEY = os.getenv('SKIP_API_KEY', '')
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
@@ -219,7 +220,7 @@ PLOTLY_COMPONENTS = [
     # django-plotly-dash components
     'dpd_components',
     # static support if serving local assets
-    # 'dpd_static_support',
+    'dpd_static_support',
 
     # Other components, as needed
     'dash_bootstrap_components',
