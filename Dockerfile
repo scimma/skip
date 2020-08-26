@@ -10,6 +10,5 @@ WORKDIR /skip
 COPY requirements.txt /skip
 
 RUN pip --no-cache-dir install gunicorn[gevent] -r /skip/requirements.txt
-RUN ./manage.py collectstatic
 
 COPY . /skip
