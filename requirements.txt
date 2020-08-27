@@ -10,3 +10,4 @@ python-dateutil
 hop-client
 whitenoise
 boto3
+git+git://github.com/TOMToolkit/skip-django.git#egg=skip-django
