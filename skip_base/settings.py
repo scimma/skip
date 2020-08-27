@@ -59,6 +59,10 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_filters',
     'skip',
+    'django.contrib.postgres',
+    'skip_dpd',
+    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
+    'bootstrap4'
 ]
 
 MIDDLEWARE = [
@@ -150,6 +154,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, '_static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+
+    'django_plotly_dash.finders.DashAssetFinder',
+    'django_plotly_dash.finders.DashComponentFinder',
+    'django_plotly_dash.finders.DashAppDirectoryFinder',
+]
 
 # Django REST Framework configuration
 
@@ -202,6 +216,26 @@ PARSERS = {
         'skip.parsers.base_parser.DefaultParser'
     ]
 }
+
+SKIP_API_CLIENT = 'skip.skip_api_client.SkipORMClient'
+SKIP_API_KEY = os.getenv('SKIP_API_KEY', '')
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+PLOTLY_COMPONENTS = [
+    # Common components
+    'dash_core_components',
+    'dash_html_components',
+    'dash_renderer',
+
+    # django-plotly-dash components
+    'dpd_components',
+    # static support if serving local assets
+    'dpd_static_support',
+
+    # Other components, as needed
+    'dash_bootstrap_components',
+    'dash_table'
+]
 
 
 try:

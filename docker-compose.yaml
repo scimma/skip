@@ -4,6 +4,10 @@ services:
     image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
     entrypoint: ["python", "manage.py", "migrate"]
     container_name: skip-migrate
+  collectstatic:
+    image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
+    entrypoint: ["python", "manage.py", "collectstatic"]
+    container_name: skip-collectstatic
   web:
     image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
     entrypoint: ["/usr/local/bin/gunicorn", "skip_base.wsgi:application", "--bind=0.0.0.0:8080"]
