@@ -6,17 +6,12 @@ services:
     container_name: skip-migrate
   collectstatic:
     image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
-<<<<<<< HEAD
     entrypoint: ["python", "manage.py", "collectstatic", "--no-input"]
     container_name: skip-collectstatic
     volumes:
       - static:/skip/static
     depends_on:
       - migrate
-=======
-    entrypoint: ["python", "manage.py", "collectstatic"]
-    container_name: skip-collectstatic
->>>>>>> 3d065cd73200aab4072455d0807e475be3289317
   web:
     image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
     entrypoint: ["/usr/local/bin/gunicorn", "skip_base.wsgi:application", "--bind=0.0.0.0:8080"]
