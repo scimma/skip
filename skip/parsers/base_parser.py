@@ -17,6 +17,9 @@ class BaseParser(ABC):
 
 class DefaultParser(BaseParser):
 
+    def __repr__(self):
+        return 'Default Parser'
+
     def parse_alert(self, alert):
         return alert
 
