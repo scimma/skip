@@ -9,6 +9,9 @@ from skip.parsers.base_parser import BaseParser
 
 class TNSParser(BaseParser):
 
+    def __repr__(self):
+        return 'TNS Parser'
+
     def parse_coordinates(self, alert):
         # The TNS message contains sexagesimal RA/Dec in fields 'ra' and 'dec', and degree values in fields 'radeg'
         # and 'decdeg'.

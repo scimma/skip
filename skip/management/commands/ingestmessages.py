@@ -66,9 +66,10 @@ class Command(BaseCommand):
                     parser = parser_class()
                     parsed_alert = parser.parse_alert(packet)
                     saved = parser.save_parsed_alert(parsed_alert, topic)
+                    print(f'Saved message for topic {topic} with {parser}.')
                 except ParseError:
+                    print(f'Unable to save message for topic {topic} with {parser}.')
                     continue
-                print(saved)
                 if saved:
                     break
 
