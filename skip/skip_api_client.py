@@ -3,6 +3,7 @@ import json
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.db.models import F
 from rest_framework.renderers import JSONRenderer
 from skip_dpd.skip_api_client import SkipAPIClient
 
@@ -19,7 +20,7 @@ class SkipORMClient(SkipAPIClient):
     def get_alerts(self, *args, **kwargs):
         page_num = kwargs.pop('page', 1)
         page_size = kwargs.pop('page_size', 20)
-        af = AlertFilter(kwargs, queryset=Alert.objects.all())
+        af = AlertFilter(kwargs, queryset=Alert.objects.all().order_by(F('alert_timestamp').desc(nulls_last=True)))
         paginator = Paginator(af.qs, page_size)
         alerts = AlertSerializer(paginator.page(page_num).object_list, many=True)
 
