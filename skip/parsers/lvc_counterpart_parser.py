@@ -90,7 +90,6 @@ class LVCCounterpartParser(BaseParser):
         """
         parsed_alert = {'message': {}}
         content = alert['content']
-        print(content)
         for line in content.splitlines():
             entry = line.split(':', 1)
             if len(entry) > 1:
