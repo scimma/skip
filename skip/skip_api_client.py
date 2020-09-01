@@ -8,8 +8,8 @@ from rest_framework.renderers import JSONRenderer
 from skip_dpd.skip_api_client import SkipAPIClient
 
 from skip.filters import AlertFilter
-from skip.models import Alert
-from skip.serializers import AlertSerializer
+from skip.models import Alert, Topic
+from skip.serializers import AlertSerializer, TopicSerializer
 
 SKIP_BASE_URL = 'http://skip.dev.hop.scimma.org/api'
 SKIP_API_KEY = settings.SKIP_API_KEY
@@ -27,3 +27,8 @@ class SkipORMClient(SkipAPIClient):
         # TODO: find a way to return as dict for performance rather than needing to do json.loads()
         # TODO: or figure out why OrderedDict doesn't work with Dash
         return json.loads(JSONRenderer().render(alerts.data))
+
+    def get_topics(self):
+        topics = TopicSerializer(Topic.objects.all(), many=True)
+
+        return json.loads(JSONRenderer().render(topics.data))
