@@ -89,29 +89,34 @@ class LVCCounterpartParser(BaseParser):
         COMMENTS:         See http://www.swift.ac.uk/ranks.php for details.
         """
         parsed_alert = {'message': {}}
-        content = alert['content']
-        for line in content.splitlines():
-            entry = line.split(':', 1)
-            if len(entry) > 1:
-                if entry[0] == 'COMMENTS' and 'comments' in parsed_alert['message']:
-                    parsed_alert['message']['comments'] += entry[1].lstrip()
+
+        try:
+            content = alert['content']
+            for line in content.splitlines():
+                entry = line.split(':', 1)
+                if len(entry) > 1:
+                    if entry[0] == 'COMMENTS' and 'comments' in parsed_alert['message']:
+                        parsed_alert['message']['comments'] += entry[1].lstrip()
+                    else:
+                        parsed_alert['message'][entry[0].lower()] = entry[1].strip()
                 else:
-                    parsed_alert['message'][entry[0].lower()] = entry[1].strip()
-            else:
-                # RA is parsed first, so append to RA if dec hasn't been parsed
-                # TODO: modify this to just keep track of the most recent key
-                if 'cntrpart_dec' not in parsed_alert['message']:
-                    parsed_alert['message']['cntrpart_ra'] += ' ' + entry[0].strip()
-                else:
-                    parsed_alert['message']['cntrpart_dec'] += ' ' + entry[0].strip()
+                    # RA is parsed first, so append to RA if dec hasn't been parsed
+                    # TODO: modify this to just keep track of the most recent key
+                    if 'cntrpart_dec' not in parsed_alert['message']:
+                        parsed_alert['message']['cntrpart_ra'] += ' ' + entry[0].strip()
+                    else:
+                        parsed_alert['message']['cntrpart_dec'] += ' ' + entry[0].strip()
 
-        ra, dec = self.parse_coordinates(parsed_alert['message'])
-        parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035)
+            ra, dec = self.parse_coordinates(parsed_alert['message'])
+            parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035)
 
-        timestamp = self.parse_timestamp(parsed_alert['message'])
-        parsed_alert['alert_timestamp'] = timestamp
+            timestamp = self.parse_timestamp(parsed_alert['message'])
+            parsed_alert['alert_timestamp'] = timestamp
 
-        parsed_alert['alert_identifier'] = parsed_alert['message']['event_trig_num']
+            parsed_alert['alert_identifier'] = parsed_alert['message']['event_trig_num']
+        except (AttributeError, KeyError, ParseError) as e:
+            print(e)
+            raise ParseError('Unable to parse alert')
 
         return parsed_alert
 
