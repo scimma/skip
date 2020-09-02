@@ -54,8 +54,6 @@ class Command(BaseCommand):
             decoded_message = msg.value().decode('utf-8')
             packet = json.loads(decoded_message)
 
-            print(packet)
-            
             # For whatever reason, TNS packets needs to be serialized to JSON twice. This should probably be handled
             # elsewhere/differently
             if topic == 'tns':
