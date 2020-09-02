@@ -99,6 +99,7 @@ class LVCCounterpartParser(BaseParser):
                     parsed_alert['message'][entry[0].lower()] = entry[1].strip()
             else:
                 # RA is parsed first, so append to RA if dec hasn't been parsed
+                # TODO: modify this to just keep track of the most recent key
                 if 'cntrpart_dec' not in parsed_alert['message']:
                     parsed_alert['message']['cntrpart_ra'] += ' ' + entry[0].strip()
                 else:
