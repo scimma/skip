@@ -47,7 +47,14 @@ class AlertFilter(filters.FilterSet):
     @staticmethod
     def filter_keyword_search(self, queryset, name, value):
         """
-        Assumes value is a comma-separated list of strings
+        Look for every value keyword in every keypath field.
+        Assumes value is a comma-separated list of keywords to search for.
+
+        This method constructs a django.db.models.Q object for every keyword X keypath
+        and OR's them together to pass to Alerts.objects.filter(). The Q-object becomes
+        the WHERE-clause of the SQL query that filters the queryset.
+
+        NB: At the moment there are no special indexes created.
         """
         # create list of keywords from comma-separated string. remove leading/trailing white-space.
         query_keywords = [keyword.strip() for keyword in value.split(',')]
@@ -80,15 +87,15 @@ class AlertFilter(filters.FilterSet):
             ['message', 'title'],
         ]
         # a Q-object query looks like Q(key1__key2__ ... __icontains=query_keyword)
-        # for dynamic Q-object creation use **kwargs,  like this: Q(**{"keypath" + "icontains" : "query_keyword"})
+        # for dynamic Q-object creation use **kwargs,  like this: Q(**{"keypath__icontains" : query_keyword})
         # Q-object instances can be OR'ed together with '|'
 
         # create a Q-object query for each keyword in each of the pre-defined keypaths
-        aggregate_keyword_query = Q()
+        aggregate_keyword_query = Q()  # empty Q-object doesn't even add WHERE clause to SQL
         for query_keyword in query_keywords:
             for keypath in keypaths:
                 keypath_key = "__".join(keypath + ['icontains'])  # 'keypath[0]__keypath[1]__icontains'
-                query = Q(**{keypath_key: f'"{query_keyword}"'})
+                query = Q(**{keypath_key: query_keyword})
                 aggregate_keyword_query = aggregate_keyword_query | query
 
         return queryset.filter(aggregate_keyword_query)
