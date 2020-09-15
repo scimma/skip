@@ -49,5 +49,5 @@ For the time being, on the terraformed ec2 instance:
 sudo yum install git
 git clone https://github.com/scimma/skip.git || git pull origin master
 $(aws ecr get-login --no-include-email --region us-west-2)
-docker-compose up
+docker-compose up &
 ```
