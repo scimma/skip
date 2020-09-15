@@ -44,7 +44,6 @@ class AlertFilter(filters.FilterSet):
         polygon = Polygon(vertices, srid=4035)
         return queryset.filter(coordinates__within=polygon)
 
-    @staticmethod
     def filter_keyword_search(self, queryset, name, value):
         """
         Look for every value keyword in every keypath field.
