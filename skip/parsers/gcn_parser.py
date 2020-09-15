@@ -9,6 +9,9 @@ from skip.parsers.base_parser import BaseParser
 
 class GCNParser(BaseParser):
 
+    def __repr__(self):
+        return 'GCN Parser'
+
     def parse_coordinates(self, alert):
         # A Position2D JSON object comes through like so:
         #   "Position2D":{

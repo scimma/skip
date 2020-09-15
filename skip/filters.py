@@ -20,7 +20,7 @@ class AlertFilter(filters.FilterSet):
     alert_timestamp = filters.DateTimeFromToRangeFilter()
     role = filters.ChoiceFilter(choices=(('utility', 'Utility'), ('test', 'Test'), ('observation', 'Observation')),
                                 null_label='None')
-    topic = filters.ModelChoiceFilter(queryset=Topic.objects.all())
+    topic = filters.ModelMultipleChoiceFilter(queryset=Topic.objects.all())
     ordering = filters.OrderingFilter(
         fields=(
             ('alert_timestamp', 'alert_timestamp')
