@@ -12,7 +12,7 @@ EARTH_RADIUS_METERS = 6371008.77141506
 
 
 class AlertFilter(filters.FilterSet):
-    # keyword = filters.CharFilter(method='filter_keyword_search', label='Keyword Search', help_text='Text Search')
+    keyword = filters.CharFilter(method='filter_keyword_search', label='Keyword Search', help_text='Text Search')
     cone_search = filters.CharFilter(method='filter_cone_search', label='Cone Search', 
                                      help_text='RA, Dec, Radius (degrees)')
     polygon_search = filters.CharFilter(method='filter_polygon_search', label='Polygon Search',
