@@ -11,6 +11,13 @@ from skip.models import Topic
 EARTH_RADIUS_METERS = 6371008.77141506
 
 
+class TopicFilter(filters.FilterSet):
+    name = filters.CharFilter(method='filter_topic_name', label='Topic Search', help_text='Search for topic name')
+
+    def filter_topic_name(self, queryset, name, value):
+        return queryset.filter(name=value)
+
+
 class AlertFilter(filters.FilterSet):
     keyword = filters.CharFilter(method='filter_keyword_search', label='Keyword Search', help_text='Text Search')
     cone_search = filters.CharFilter(method='filter_cone_search', label='Cone Search', 
@@ -29,7 +36,9 @@ class AlertFilter(filters.FilterSet):
     )
 
     def filter_event_trigger_number(self, queryset, name, value):
+        print('filtering on event trigger number')
         print(value)
+        print(queryset.filter(topic__name='lvc-counterpart', message__event_trig_num__icontains=value).count())
         return queryset.filter(topic__name='lvc-counterpart', message__event_trig_num__icontains=value)
 
     def filter_cone_search(self, queryset, name, value):
