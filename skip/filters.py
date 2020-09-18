@@ -36,9 +36,6 @@ class AlertFilter(filters.FilterSet):
     )
 
     def filter_event_trigger_number(self, queryset, name, value):
-        print('filtering on event trigger number')
-        print(value)
-        print(queryset.filter(topic__name='lvc-counterpart', message__event_trig_num__icontains=value).count())
         return queryset.filter(topic__name='lvc-counterpart', message__event_trig_num__icontains=value)
 
     def filter_cone_search(self, queryset, name, value):

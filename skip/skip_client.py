@@ -20,9 +20,7 @@ class SkipORMClient(SkipClient):
     def get_alerts(self, *args, **kwargs):
         page_num = kwargs.pop('page', 1)
         page_size = kwargs.pop('page_size', 20)
-        print(kwargs)
         af = AlertFilter(kwargs, queryset=Alert.objects.all().order_by(F('alert_timestamp').desc(nulls_last=True)))
-        print(af.__dir__())
         paginator = Paginator(af.qs, page_size)
         alerts = AlertSerializer(paginator.page(page_num).object_list, many=True)
 
