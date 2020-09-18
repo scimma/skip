@@ -1,3 +1,6 @@
+from astropy.coordinates import Angle, SkyCoord
+from astropy import units
+
 from skip.models import Alert, Target, Topic
 from rest_framework import serializers
 
@@ -10,7 +13,9 @@ class TargetSerializer(serializers.ModelSerializer):
 
 class AlertSerializer(serializers.ModelSerializer):
     right_ascension = serializers.SerializerMethodField()
+    right_ascension_sexagesimal = serializers.SerializerMethodField()
     declination = serializers.SerializerMethodField()
+    declination_sexagesimal = serializers.SerializerMethodField()
     topic = serializers.SerializerMethodField()
 
     class Meta:
@@ -23,6 +28,8 @@ class AlertSerializer(serializers.ModelSerializer):
                   'topic',
                   'right_ascension',
                   'declination',
+                  'right_ascension_sexagesimal',
+                  'declination_sexagesimal',
                   'role',
                   'message',
                   'created',
@@ -35,6 +42,16 @@ class AlertSerializer(serializers.ModelSerializer):
     def get_declination(self, obj):
         if obj.coordinates:
             return obj.coordinates.y
+
+    def get_right_ascension_sexagesimal(self, obj):
+        if obj.coordinates:
+            a = Angle(obj.coordinates.x, unit=units.degree)
+            return a.to_string(unit=units.hour, sep=':')
+
+    def get_declination_sexagesimal(self, obj):
+        if obj.coordinates:
+            a = Angle(obj.coordinates.y, unit=units.degree)
+            return a.to_string(unit=units.degree, sep=':')
 
     def get_topic(self, obj):
         return Topic.objects.get(pk=obj.topic.id).name
