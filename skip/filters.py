@@ -21,11 +21,16 @@ class AlertFilter(filters.FilterSet):
     role = filters.ChoiceFilter(choices=(('utility', 'Utility'), ('test', 'Test'), ('observation', 'Observation')),
                                 null_label='None')
     topic = filters.ModelMultipleChoiceFilter(queryset=Topic.objects.all())
+    event_trigger_number = filters.CharFilter(method='filter_event_trigger_number', label='LVC Trigger Number')
     ordering = filters.OrderingFilter(
         fields=(
             ('alert_timestamp', 'alert_timestamp')
         )
     )
+
+    def filter_event_trigger_number(self, queryset, name, value):
+        print(value)
+        return queryset.filter(topic__name='lvc-counterpart', message__event_trig_num__icontains=value)
 
     def filter_cone_search(self, queryset, name, value):
         ra, dec, radius = value.split(',')
