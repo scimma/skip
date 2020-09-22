@@ -1,3 +1,4 @@
+astropy
 confluent_kafka
 django
 django-cors-headers

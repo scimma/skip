@@ -26,10 +26,10 @@ class LVCCounterpartParser(BaseParser):
     def parse_timestamp(self, alert):
         # TODO: the alert contains three different timestamps, we should determine which we want. This method
         # currently returns the event timestamp, rather than the notice or observation timestamps.
-        raw_datestamp = alert['event_date']
-        raw_timestamp = alert['event_time']
-        datestamp = re.search(r'\d{4}\/\d{2}\/\d{2}', raw_datestamp)
-        parsed_datestamp = parse(datestamp.group(0))
+        raw_datestamp = alert['obs_date']
+        raw_timestamp = alert['obs_time']
+        datestamp = re.search(r'\d{2}\/\d{2}\/\d{2}', raw_datestamp)
+        parsed_datestamp = parse(datestamp.group(0), yearfirst=True)
         timestamp = re.search(r'\d{2}:\d{2}:\d{2}\.\d{2}', raw_timestamp)
         parsed_timestamp = parse(timestamp.group(0))
         combined_datetime = datetime.combine(parsed_datestamp, parsed_timestamp.time())

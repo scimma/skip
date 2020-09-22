@@ -217,7 +217,8 @@ PARSERS = {
     ]
 }
 
-SKIP_API_CLIENT = 'skip.skip_api_client.SkipORMClient'
+SKIP_CLIENT = 'skip.skip_client.SkipORMClient'
+DEFAULT_PAGE_SIZE = 20
 SKIP_API_KEY = os.getenv('SKIP_API_KEY', '')
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
