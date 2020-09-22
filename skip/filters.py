@@ -29,6 +29,7 @@ class AlertFilter(filters.FilterSet):
                                 null_label='None')
     topic = filters.ModelMultipleChoiceFilter(queryset=Topic.objects.all())
     event_trigger_number = filters.CharFilter(method='filter_event_trigger_number', label='LVC Trigger Number')
+
     ordering = filters.OrderingFilter(
         fields=(
             ('alert_timestamp', 'alert_timestamp')
