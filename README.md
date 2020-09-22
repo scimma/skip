@@ -1,6 +1,6 @@
 # Skip
 
-Django REST api to Hop Alerts Database
+Django REST API to Hop Alerts Database
 
 ## Local Development Quickstart
 
