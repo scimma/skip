@@ -44,7 +44,7 @@ If you're coming across connection errors, make sure you aren't inadvertently us
 confirm that there are no conflicting docker containers exposing 5432 or 8080.
 
 ## AWS Deployment
-For the time being, on the terraformed ec2 instance:
+For the time being, on the terraformed EC2 instance:
 ```bash
 sudo yum install git
 git clone https://github.com/scimma/skip.git || git pull origin master
