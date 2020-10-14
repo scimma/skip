@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
-import os
 import boto3
+import logging.config
+import os
 
 
 def get_secret(secret_name):
@@ -116,6 +117,26 @@ DATABASES = {
 }
 
 
+# Logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO'
+        }
+    }
+}
+logging.config.dictConfig(LOGGING)
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -198,13 +219,22 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     # for example on centos7: 'ssl.ca.location': '/etc/ssl/certs/ca-bundle.crt',
 }
 
-HOPSKOTCH_TOPICS = ['gcn', 'lvc-counterpart', 'tns']
+HOPSKOTCH_TOPICS = [
+    'gcn',
+    'gcn-circular',
+    'lvc-counterpart',
+    'tns'
+]
 
 # TODO: PARSERS should be renamed to <NAMESPACING>_PARSERS
 PARSERS = {
     'gcn': [
         'skip.parsers.gcn_parser.GCNParser',
         'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
+        'skip.parsers.base_parser.DefaultParser'
+    ],
+    'gcn-circular': [
+        'skip.parsers.gcn_circular_parser.GCNCircularParser',
         'skip.parsers.base_parser.DefaultParser'
     ],
     'lvc-counterpart': [
