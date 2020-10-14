@@ -73,5 +73,4 @@ class Command(BaseCommand):
                 if saved:
                     break
 
-
         self.consumer.close()

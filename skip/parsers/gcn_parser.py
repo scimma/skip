@@ -1,3 +1,4 @@
+import logging
 from dateutil.parser import parse
 
 from django.contrib.gis.geos import Point
@@ -5,6 +6,9 @@ from django.contrib.gis.geos import Point
 from skip.exceptions import ParseError
 from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
+
+
+logger = logging.getLogger(__name__)
 
 
 class GCNParser(BaseParser):
@@ -42,6 +46,7 @@ class GCNParser(BaseParser):
 
 
     def parse_alert(self, alert):
+        alert = alert['content']
 
         try:
             role = alert['role']
@@ -49,7 +54,7 @@ class GCNParser(BaseParser):
             alert_timestamp = parse(alert['Who']['Date'])
             ra, dec = self.parse_coordinates(alert)
         except (AttributeError, KeyError, ParseError) as e:
-            print(e)
+            logger.log(msg=f'Unable to parse GCN alert: {e}', level=logging.WARN)
             # TODO: How do we want to handle cascading exceptions?
             raise ParseError('Unable to parse alert')
 
