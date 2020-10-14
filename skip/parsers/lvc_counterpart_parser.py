@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dateutil.parser import parse
 from datetime import datetime, timezone
 import json
+import logging
 import re
 
 from django.contrib.gis.geos import Point
@@ -9,6 +10,9 @@ from django.contrib.gis.geos import Point
 from skip.exceptions import ParseError
 from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
+
+
+logger = logging.getLogger(__name__)
 
 
 class LVCCounterpartParser(BaseParser):
@@ -115,7 +119,7 @@ class LVCCounterpartParser(BaseParser):
 
             parsed_alert['alert_identifier'] = parsed_alert['message']['event_trig_num']
         except (AttributeError, KeyError, ParseError) as e:
-            print(e)
+            logger.log(msg=f'Unable to parse LVC Counterpart alert: {e}', level=logging.WARN)
             raise ParseError('Unable to parse alert')
 
         return parsed_alert
