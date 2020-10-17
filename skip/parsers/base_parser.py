@@ -1,7 +1,11 @@
 from abc import ABC, abstractmethod
 import json
+import logging
 
 from skip.models import Alert, Topic
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseParser(ABC):
@@ -10,10 +14,16 @@ class BaseParser(ABC):
     def parse_alert(self, alert):
         pass
 
-    @abstractmethod
-    def save_parsed_alert(self, parsed_alert, topic_name):
-        pass
+    def save_alert(self, alert_content, topic_name):
+        parsed_alert = self.parse_alert(alert_content)
 
+        if parsed_alert:
+            topic, created = Topic.objects.get_or_create(name=topic_name)
+            alert = Alert.objects.create(**parsed_alert, topic=topic)
+            logger.log(msg=f'Saved alert from topic {topic_name} with parser {self}.', level=logging.INFO)
+            return alert
+        else:
+            return
 
 class DefaultParser(BaseParser):
 
@@ -21,10 +31,4 @@ class DefaultParser(BaseParser):
         return 'Default Parser'
 
     def parse_alert(self, alert):
-        return alert
-
-    def save_parsed_alert(self, parsed_alert, topic_name):
-        print(f'saved {topic_name} alert as default alert')
-        topic, created = Topic.objects.get_or_create(name=topic_name)
-        alert = Alert.objects.create(message=json.dumps(parsed_alert), topic=topic)
-        return True
+        return {'message': alert}

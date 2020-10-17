@@ -1,10 +1,14 @@
 from dateutil.parser import parse
+import logging
 
 from django.contrib.gis.geos import Point
 
 from skip.exceptions import ParseError
 from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
+
+
+logger = logging.getLogger(__name__)
 
 
 class TNSParser(BaseParser):
@@ -25,30 +29,17 @@ class TNSParser(BaseParser):
             raise ParseError('Unable to parse coordinates')
 
     def parse_alert(self, alert):
+        parsed_alert = {}
 
         try:
-            alert = alert['content']
-            print(alert)
-            alert_identifier = alert['name_prefix'] + alert['objname']
-            alert_timestamp = parse(alert['discoverydate'])
+            parsed_alert['alert_identifier'] = alert['name_prefix'] + alert['objname']
+            parsed_alert['alert_timestamp'] = parse(alert['discoverydate'])
             ra, dec = self.parse_coordinates(alert)
+            parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035),
         except (AttributeError, KeyError, ParseError) as e:
-            print(e)
-            # TODO: How do we want to handle cascading exceptions?
-            raise ParseError('Unable to parse alert')
+            logger.log(msg=f'Unable to parse TNS alert: {e}', level=logging.WARN)
+            return
 
-        parsed_alert = {
-            'role': None,
-            'alert_timestamp': alert_timestamp,
-            'alert_identifier': alert_identifier,
-            'coordinates': Point(float(ra), float(dec), srid=4035),
-            'message': alert
-        }
+        parsed_alert['message'] = alert
 
         return parsed_alert
-
-    def save_parsed_alert(self, parsed_alert, topic_name):
-        topic, created = Topic.objects.get_or_create(name=topic_name)
-        parsed_alert['topic'] = topic
-        alert, created = Alert.objects.get_or_create(**parsed_alert)
-        return created
