@@ -1,7 +1,6 @@
 from importlib import import_module
 import json
 import logging
-import time
 
 from confluent_kafka import Consumer
 from django.conf import settings
@@ -13,23 +12,33 @@ logger = logging.getLogger(__name__)
 
 HOPSKOTCH_CONSUMER_CONFIGURATION = settings.HOPSKOTCH_CONSUMER_CONFIGURATION
 HOPSKOTCH_TOPICS = settings.HOPSKOTCH_TOPICS
-PARSERS = settings.HOPSKOTCH_PARSERS
-POLLING_INTERVAL = settings.POLLING_INTERVAL
+HOPSKOTCH_CONSUMER_POLLING_TIMEOUT = settings.HOPSKOTCH_CONSUMER_POLLING_TIMEOUT
+HOPSKOTCH_PARSERS = settings.HOPSKOTCH_PARSERS
 
 
-def get_parser_classes(topic):
-    parser_classes = []
+def get_parser_class(topic):
+    """
+    return the parser class for the given topic.
+    If there is no entry in the settings.HOPSKOTCH_PARSERS dictionary for this topic,
+    the return the 'default' parser class.
+    """
+    try:
+        parser = HOPSKOTCH_PARSERS[topic]
+    except KeyError:
+        parser = HOPSKOTCH_PARSERS['default']
+        logger.log(msg=f'HOPSKOTCH_PARSER not found for topic: {topic}. Using default parser.', level=logging.WARNING)
 
-    for parser in PARSERS.get(topic, []) + PARSERS.get('default', []):
-        module_name, class_name = parser.rsplit('.', 1)
-        try:
-            module = import_module(module_name)
-            parser_class = getattr(module, class_name)
-        except (ImportError, AttributeError):
-            raise ImportError(f'Unable to import parser {parser}')
-        parser_classes.append(parser_class)
-    
-    return parser_classes
+    module_name, class_name = parser.rsplit('.', 1)
+
+    # TODO: the seems like an overly complicated way to get the parser class imported
+    #  is there precedent for this method?
+    try:
+        module = import_module(module_name)
+        parser_class = getattr(module, class_name)
+    except (ImportError, AttributeError):
+        raise ImportError(f'Unable to import parser {parser}')
+
+    return parser_class
 
 
 class Command(BaseCommand):
@@ -43,12 +52,12 @@ class Command(BaseCommand):
         roles = {}
 
         while True:
-            logger.log(msg=f'Polling topics {HOPSKOTCH_TOPICS} every {POLLING_INTERVAL} seconds', level=logging.INFO)
-            msg = self.consumer.poll(POLLING_INTERVAL)
+            logger.log(msg=f'Polling topics {HOPSKOTCH_TOPICS} with timeout of {HOPSKOTCH_CONSUMER_POLLING_TIMEOUT} seconds', level=logging.INFO)
+            msg = self.consumer.poll(HOPSKOTCH_CONSUMER_POLLING_TIMEOUT)
             if msg is None:
                 continue
             if msg.error():
-                logger.log(msg=f'Error consuming message: {msg.error()}', level=logging.WARN)
+                logger.log(msg=f'Error consuming message: {msg.error()}', level=logging.WARNING)
                 continue
 
             # TODO: message handling should be moved into method
@@ -64,14 +73,13 @@ class Command(BaseCommand):
 
             logger.log(msg=f'Processing alert: {packet}', level=logging.INFO)
 
-            parser_classes = get_parser_classes(topic)
-            for parser_class in parser_classes:
-                alert_content = packet['content']
-                parser = parser_class()
-                saved_alert = parser.save_alert(alert_content, topic)
+            # Get the parser class, instanciate it, parse the alert, and save it
+            parser_class = get_parser_class(topic)
+            parser = parser_class()
+            alert_content = packet['content']
+            saved_alert = parser.save_alert(alert_content, topic)
 
-                if saved_alert:
-                    logger.log(msg=f'saved alert {saved_alert}', level=logging.INFO)
-                    break
+            if saved_alert:
+                logger.log(msg=f'saved alert {saved_alert}', level=logging.INFO)
 
         self.consumer.close()

@@ -204,7 +204,7 @@ REST_FRAMEWORK = {
 
 HOPSKOTCH_SERVER = os.getenv('HOPSKOTCH_SERVER', 'dev.hop.scimma.org')
 HOPSKOTCH_PORT = os.getenv('HOPSKOTCH_PORT', '9092')
-POLLING_INTERVAL = 10
+HOPSKOTCH_CONSUMER_POLLING_TIMEOUT = 10
 
 HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'bootstrap.servers': f'{HOPSKOTCH_SERVER}:{HOPSKOTCH_PORT}',
@@ -228,21 +228,11 @@ HOPSKOTCH_TOPICS = [
 ]
 
 HOPSKOTCH_PARSERS = {
-    'gcn': [
-        'skip.parsers.gcn_parser.GCNParser',
-    ],
-    'gcn-circular': [
-        'skip.parsers.gcn_circular_parser.GCNCircularParser',
-    ],
-    'lvc-counterpart': [
-        'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
-    ],
-    'tns': [
-        'skip.parsers.tns_parser.TNSParser',
-    ],
-    'default': [
-        'skip.parsers.base_parser.DefaultParser'
-    ]
+    'gcn': 'skip.parsers.gcn_parser.GCNParser',
+    'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser',
+    'lvc-counterpart': 'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
+    'tns': 'skip.parsers.tns_parser.TNSParser',
+    'default': 'skip.parsers.base_parser.DefaultParser'
 }
 
 SKIP_CLIENT = 'skip.skip_client.SkipORMClient'
