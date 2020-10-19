@@ -37,7 +37,7 @@ class TNSParser(BaseParser):
             ra, dec = self.parse_coordinates(alert)
             parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035),
         except (AttributeError, KeyError, ParseError) as e:
-            logger.log(msg=f'Unable to parse TNS alert: {e}', level=logging.WARN)
+            logger.log(msg=f'Unable to parse TNS alert: {e}', level=logging.WARNING)
             return
 
         parsed_alert['message'] = alert
