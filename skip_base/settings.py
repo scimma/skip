@@ -224,7 +224,8 @@ HOPSKOTCH_TOPICS = [
     'gcn',
     'gcn-circular',
     'lvc-counterpart',
-    'tns'
+    'tns',
+    'tomtoolkit-test'
 ]
 
 HOPSKOTCH_PARSERS = {
@@ -239,6 +240,9 @@ HOPSKOTCH_PARSERS = {
     ],
     'tns': [
         'skip.parsers.tns_parser.TNSParser',
+    ],
+    'tomtoolkit-test': [
+        'skip.parsers.tomtoolkit_parser.TOMToolkitParser'
     ],
     'default': [
         'skip.parsers.base_parser.DefaultParser'
