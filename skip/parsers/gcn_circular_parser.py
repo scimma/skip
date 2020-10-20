@@ -34,28 +34,15 @@ class GCNCircularParser(BaseParser):
         pass
 
     def parse_alert(self, alert):
-        print(alert)
-        alert = alert['content']
-        print(alert)
+        parsed_alert = {}
 
         try:
-            alert_identifier = alert['header']['number']
-            alert_timestamp = parse(alert['header']['date'], parserinfo=parserinfo(yearfirst=True))
+            parsed_alert['alert_identifier'] = alert['header']['number']
+            parsed_alert['alert_timestamp'] = parse(alert['header']['date'], parserinfo=parserinfo(yearfirst=True))
         except (AttributeError, KeyError, ParseError) as e:
             logger.log(msg=f'Unable to parse GCN Circular alert: {e}', level=logging.WARN)
-            # TODO: How do we want to handle cascading exceptions?
-            raise ParseError('Unable to parse alert')
+            return
 
-        parsed_alert = {
-            'alert_timestamp': alert_timestamp,
-            'alert_identifier': alert_identifier,
-            'message': alert
-        }
+        parsed_alert['message'] = alert
 
         return parsed_alert
-
-    def save_parsed_alert(self, parsed_alert, topic_name):
-        topic, created = Topic.objects.get_or_create(name=topic_name)
-        parsed_alert['topic'] = topic
-        alert, created = Alert.objects.get_or_create(**parsed_alert)
-        return created

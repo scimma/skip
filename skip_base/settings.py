@@ -204,6 +204,7 @@ REST_FRAMEWORK = {
 
 HOPSKOTCH_SERVER = os.getenv('HOPSKOTCH_SERVER', 'dev.hop.scimma.org')
 HOPSKOTCH_PORT = os.getenv('HOPSKOTCH_PORT', '9092')
+HOPSKOTCH_CONSUMER_POLLING_TIMEOUT = 10
 
 HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'bootstrap.servers': f'{HOPSKOTCH_SERVER}:{HOPSKOTCH_PORT}',
@@ -223,28 +224,17 @@ HOPSKOTCH_TOPICS = [
     'gcn',
     'gcn-circular',
     'lvc-counterpart',
-    'tns'
+    'tns',
+    'tomtoolkit-test'
 ]
 
-# TODO: PARSERS should be renamed to <NAMESPACING>_PARSERS
-PARSERS = {
-    'gcn': [
-        'skip.parsers.gcn_parser.GCNParser',
-        'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
-        'skip.parsers.base_parser.DefaultParser'
-    ],
-    'gcn-circular': [
-        'skip.parsers.gcn_circular_parser.GCNCircularParser',
-        'skip.parsers.base_parser.DefaultParser'
-    ],
-    'lvc-counterpart': [
-        'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
-        'skip.parsers.base_parser.DefaultParser'
-    ],
-    'tns': [
-        'skip.parsers.tns_parser.TNSParser',
-        'skip.parsers.base_parser.DefaultParser'
-    ]
+HOPSKOTCH_PARSERS = {
+    'gcn': 'skip.parsers.gcn_parser.GCNParser',
+    'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser',
+    'lvc-counterpart': 'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
+    'tns': 'skip.parsers.tns_parser.TNSParser',
+    'tomtoolkit-test': 'skip.parsers.tomtoolkit_parser.TOMToolkitParser',
+    'default': 'skip.parsers.base_parser.DefaultParser'
 }
 
 SKIP_CLIENT = 'skip.skip_client.SkipORMClient'
