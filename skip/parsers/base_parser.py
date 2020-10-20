@@ -20,10 +20,11 @@ class BaseParser(ABC):
         if parsed_alert:
             topic, created = Topic.objects.get_or_create(name=topic_name)
             alert = Alert.objects.create(**parsed_alert, topic=topic)
-            logger.log(msg=f'Saved alert from topic {topic_name} with parser {self}.', level=logging.INFO)
+            logger.log(msg=f'Saved alert from {"(new)" if created else ""} topic {topic_name} with parser {self}.', level=logging.INFO)
             return alert
         else:
             return
+
 
 class DefaultParser(BaseParser):
 

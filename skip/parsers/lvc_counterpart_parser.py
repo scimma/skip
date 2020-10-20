@@ -119,7 +119,7 @@ class LVCCounterpartParser(BaseParser):
 
             parsed_alert['alert_identifier'] = parsed_alert['message']['event_trig_num']
         except (AttributeError, KeyError, ParseError) as e:
-            logger.log(msg=f'Unable to parse LVC Counterpart alert: {e}', level=logging.WARN)
+            logger.log(msg=f'Unable to parse LVC Counterpart alert: {e}', level=logging.WARNING)
             return
 
         return parsed_alert
