@@ -95,8 +95,8 @@ class LVCCounterpartParser(BaseParser):
         parsed_alert = {'message': {}}
 
         try:
-            content = alert['content']
-            for line in content.splitlines():
+            alert = alert['content']
+            for line in alert.splitlines():
                 entry = line.split(':', 1)
                 if len(entry) > 1:
                     if entry[0] == 'COMMENTS' and 'comments' in parsed_alert['message']:
@@ -119,14 +119,7 @@ class LVCCounterpartParser(BaseParser):
 
             parsed_alert['alert_identifier'] = parsed_alert['message']['event_trig_num']
         except (AttributeError, KeyError, ParseError) as e:
-            logger.log(msg=f'Unable to parse LVC Counterpart alert: {e}', level=logging.WARN)
-            raise ParseError('Unable to parse alert')
+            logger.log(msg=f'Unable to parse LVC Counterpart alert: {e}', level=logging.WARNING)
+            return
 
         return parsed_alert
-
-    def save_parsed_alert(self, parsed_alert, topic_name):
-        # target, created = Topic.objects.get_or_create(name=parsed_alert.pop('target'))
-        topic, created = Topic.objects.get_or_create(name=topic_name)
-        parsed_alert['topic'] = topic
-        alert = Alert.objects.get_or_create(**parsed_alert)
-        return alert, True

@@ -1,4 +1,4 @@
-from dateutil.parser import parse
+from datetime import datetime
 import logging
 
 from django.contrib.gis.geos import Point
@@ -11,17 +11,19 @@ from skip.parsers.base_parser import BaseParser
 logger = logging.getLogger(__name__)
 
 
-class TNSParser(BaseParser):
+class TOMToolkitParser(BaseParser):
 
     def __repr__(self):
-        return 'TNS Parser'
+        return 'TOM Toolkit Parser'
 
     def parse_coordinates(self, alert):
         # The TNS message contains sexagesimal RA/Dec in fields 'ra' and 'dec', and degree values in fields 'radeg'
         # and 'decdeg'.
         try:
-            ra = alert['radeg']
-            dec = alert['decdeg']
+            ra = alert['ra']
+            dec = alert['dec']
+            print(ra)
+            print(dec)
             return ra, dec
         except (AttributeError, KeyError):
             # TODO: Alerts of role `utility` appear to have a different format--should be explored further rather than 
@@ -32,12 +34,14 @@ class TNSParser(BaseParser):
         parsed_alert = {}
 
         try:
-            parsed_alert['alert_identifier'] = alert['name_prefix'] + alert['objname']
-            parsed_alert['alert_timestamp'] = parse(alert['discoverydate'])
+            # parsed_alert['alert_identifier'] = ''
+            parsed_alert['alert_timestamp'] = datetime.now()
             ra, dec = self.parse_coordinates(alert)
-            parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035),
+            print(float(ra))
+            print(float(dec))
+            parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035)
         except (AttributeError, KeyError, ParseError) as e:
-            logger.log(msg=f'Unable to parse TNS alert: {e}', level=logging.WARNING)
+            logger.log(msg=f'Unable to parse TOM Toolkit alert: {e}', level=logging.WARN)
             return
 
         parsed_alert['message'] = alert

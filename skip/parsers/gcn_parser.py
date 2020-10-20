@@ -40,36 +40,28 @@ class GCNParser(BaseParser):
             dec = coordinates['Value2']['C2']
             return ra, dec
         except (AttributeError, KeyError):
-            # TODO: Alerts of role `utility` appear to have a different format--should be explored further rather than 
+            # TODO: Alerts of role `utility` do not have coordinates--should be explored further rather than 
             # shunted off to the DefaultParser
+            logger.log(msg=f'Unable to parse coordinates: {coordinates}', level=logging.WARN)
             raise ParseError('Unable to parse coordinates')
 
 
     def parse_alert(self, alert):
-        alert = alert['content']
+        parsed_alert = {}
 
         try:
-            role = alert['role']
-            alert_identifier = alert['ivorn']
-            alert_timestamp = parse(alert['Who']['Date'])
+            parsed_alert['role'] = alert['role']
+            parsed_alert['alert_identifier'] = alert['ivorn']
+            parsed_alert['alert_timestamp'] = parse(alert['Who']['Date'])
             ra, dec = self.parse_coordinates(alert)
+            parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035)
         except (AttributeError, KeyError, ParseError) as e:
             logger.log(msg=f'Unable to parse GCN alert: {e}', level=logging.WARN)
-            # TODO: How do we want to handle cascading exceptions?
-            raise ParseError('Unable to parse alert')
+            return
 
-        parsed_alert = {
-            'role': role,
-            'alert_timestamp': alert_timestamp,
-            'alert_identifier': alert_identifier,
-            'coordinates': Point(float(ra), float(dec), srid=4035),
-            'message': alert
-        }
+        parsed_alert['message'] = alert
 
         return parsed_alert
 
-    def save_parsed_alert(self, parsed_alert, topic_name):
-        topic, created = Topic.objects.get_or_create(name=topic_name)
-        parsed_alert['topic'] = topic
-        alert, created = Alert.objects.get_or_create(**parsed_alert)
-        return created
+
+# TODO: This breaks in the default parser, so make sure it doesn't
