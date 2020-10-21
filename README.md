@@ -43,12 +43,17 @@ Navigate to `localhost:8080` to view the API.
 If you're coming across connection errors, make sure you aren't inadvertently using bad values from your `local_settings.py`, and 
 confirm that there are no conflicting docker containers exposing 5432 or 8080.
 
+When making changes to the model, migrations will fail because skip_dpd attempts to load
+the ORM on `makemigrations`. The current workaround is to comment out `settings.SKIP_CLIENT` for the migrations, and then uncomment it. For this reason, at this time
+migrations for the dev database must be executed locally.
+
 ## AWS Deployment
 For the time being, on the terraformed EC2 instance:
 ```bash
 sudo yum install git
 git clone https://github.com/scimma/skip.git || git pull origin master
 cd skip
+# If migrations are needed, please see the note in the Troubleshooting section of this document
 $(aws ecr get-login --no-include-email --region us-west-2)
 docker-compose up &
 ```

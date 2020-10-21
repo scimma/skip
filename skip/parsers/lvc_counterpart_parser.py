@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class LVCCounterpartParser(BaseParser):
+    counterpart_identifier_regex = re.compile(r'\d?\w+\s\w\d+\.\d(\+|-)\d+')
+    comment_warnings_prefix = 'ranks\.php for details.'
+    comment_warnings_regex = re.compile(r'({prefix}).*$'.format(prefix=comment_warnings_prefix))
 
     def __repr__(self):
         return 'LVC Counterpart Parser'
@@ -26,6 +29,17 @@ class LVCCounterpartParser(BaseParser):
         ra = raw_ra.split('d', 1)[0]
         dec = raw_dec.split('d', 1)[0]
         return ra, dec
+
+    def parse_extracted_fields(self, alert):
+        extracted_fields = {}
+
+        ci_match = self.counterpart_identifier_regex.search(alert['comments'])
+        extracted_fields['counterpart_identifier'] = ci_match[0].strip() if ci_match else ''
+
+        cw_match = self.comment_warnings_regex.search(alert['comments'])
+        extracted_fields['comment_warnings'] = cw_match[0][len(self.comment_warnings_prefix):].strip() if cw_match else ''
+
+        return extracted_fields
 
     def parse_timestamp(self, alert):
         # TODO: the alert contains three different timestamps, we should determine which we want. This method
@@ -56,7 +70,7 @@ class LVCCounterpartParser(BaseParser):
 
         TITLE:            GCN/LVC COUNTERPART NOTICE
         NOTICE_DATE:      Sat 13 Apr 19 02:48:49 UT
-        NOTICE_TYPE:      Other 
+        NOTICE_TYPE:      Other
         CNTRPART_RA:      214.9576d {+14h 19m 49.8s} (J2000),
                           215.1672d {+14h 20m 40.1s} (current),
                           214.4139d {+14h 17m 39.3s} (1950)
@@ -92,7 +106,7 @@ class LVCCounterpartParser(BaseParser):
         COMMENTS:         1 being the most likely and 4 the least.
         COMMENTS:         See http://www.swift.ac.uk/ranks.php for details.
         """
-        parsed_alert = {'message': {}}
+        parsed_alert = {'message': {}, 'extracted_fields': {}}
 
         try:
             alert = alert['content']
@@ -111,6 +125,7 @@ class LVCCounterpartParser(BaseParser):
                     else:
                         parsed_alert['message']['cntrpart_dec'] += ' ' + entry[0].strip()
 
+            print('before parse coordinates')
             ra, dec = self.parse_coordinates(parsed_alert['message'])
             parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035)
 
@@ -118,6 +133,7 @@ class LVCCounterpartParser(BaseParser):
             parsed_alert['alert_timestamp'] = timestamp
 
             parsed_alert['alert_identifier'] = parsed_alert['message']['event_trig_num']
+            parsed_alert['extracted_fields'] = self.parse_extracted_fields(parsed_alert['message'])
         except (AttributeError, KeyError, ParseError) as e:
             logger.log(msg=f'Unable to parse LVC Counterpart alert: {e}', level=logging.WARNING)
             return

@@ -28,10 +28,10 @@ class Alert(models.Model):
     alert_timestamp = models.DateTimeField(null=True, blank=True)
     coordinates = gis_models.PointField(null=True, blank=True)
     role = models.CharField(max_length=50, null=True, blank=True)
-    message = models.JSONField()
+    message = models.JSONField(default=dict)
+    extracted_fields = models.JSONField(default=dict)  # TODO: should we rename this?
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-
 
     class Meta:
         indexes = [

@@ -6,7 +6,7 @@ from confluent_kafka import Consumer
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from skip.exceptions import ParseError
+from skip.parsers.base_parser import DefaultParser
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.consumer.subscribe(HOPSKOTCH_TOPICS)
-        roles = {}
 
         while True:
             logger.log(msg=f'Polling topics {HOPSKOTCH_TOPICS} with timeout of {HOPSKOTCH_CONSUMER_POLLING_TIMEOUT} seconds', level=logging.INFO)
@@ -62,7 +61,7 @@ class Command(BaseCommand):
 
             # TODO: message handling should be moved into method
             topic = msg.topic()
-            
+
             decoded_message = msg.value().decode('utf-8')
             packet = json.loads(decoded_message)
 
@@ -73,13 +72,15 @@ class Command(BaseCommand):
 
             logger.log(msg=f'Processing alert: {packet}', level=logging.INFO)
 
-            # Get the parser class, instanciate it, parse the alert, and save it
+            # Get the parser class, instantiate it, parse the alert, and save it
             parser_class = get_parser_class(topic)
             parser = parser_class()
             alert_content = packet['content']
             saved_alert = parser.save_alert(alert_content, topic)
 
-            if saved_alert:
+            if saved_alert is not None:
                 logger.log(msg=f'saved alert {saved_alert}', level=logging.INFO)
+            else:
+                parser_class = DefaultParser().save_alert(alert_content, topic)
 
         self.consumer.close()

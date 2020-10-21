@@ -20,7 +20,7 @@ class AlertSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
-        fields = [ 
+        fields = [
                 #   'target',
                   'id',
                   'alert_identifier',
@@ -31,6 +31,7 @@ class AlertSerializer(serializers.ModelSerializer):
                   'right_ascension_sexagesimal',
                   'declination_sexagesimal',
                   'role',
+                  'extracted_fields',
                   'message',
                   'created',
                   'modified']
