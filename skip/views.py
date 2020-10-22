@@ -1,3 +1,4 @@
+from django.db.models import F
 from rest_framework import pagination
 from rest_framework import permissions
 from rest_framework import viewsets
@@ -26,6 +27,9 @@ class AlertViewSet(viewsets.ModelViewSet):
     # permission_classes = [permissions.IsAuthenticated]
     queryset = Alert.objects.all()
     serializer_class = AlertSerializer
+
+    class Meta:
+        ordering = [F('alert_timestamp').desc(nulls_last=True)]  # https://docs.djangoproject.com/en/dev/ref/models/options/#ordering
 
 
 class TopicViewSet(viewsets.ModelViewSet):
