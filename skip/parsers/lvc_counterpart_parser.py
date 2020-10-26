@@ -1,14 +1,11 @@
-from abc import ABC, abstractmethod
 from dateutil.parser import parse
 from datetime import datetime, timezone
-import json
 import logging
 import re
 
 from django.contrib.gis.geos import Point
 
 from skip.exceptions import ParseError
-from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
 
 
@@ -22,6 +19,14 @@ class LVCCounterpartParser(BaseParser):
 
     def __repr__(self):
         return 'LVC Counterpart Parser'
+
+    def parse_alert_identifier(self, alert):
+        """
+        Sources are of the format S123456_X1, that is, event trigger number + '_X' + source serial number
+        """
+        event_trigger_number = alert['event_trig_num']
+        source_sernum = alert['sourse_sernum']
+        return f'{event_trigger_number}_X{source_sernum}'
 
     def parse_coordinates(self, alert):
         raw_ra = alert['cntrpart_ra'].split(',')[0]
@@ -125,14 +130,13 @@ class LVCCounterpartParser(BaseParser):
                     else:
                         parsed_alert['message']['cntrpart_dec'] += ' ' + entry[0].strip()
 
-            print('before parse coordinates')
             ra, dec = self.parse_coordinates(parsed_alert['message'])
             parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035)
 
             timestamp = self.parse_timestamp(parsed_alert['message'])
             parsed_alert['alert_timestamp'] = timestamp
 
-            parsed_alert['alert_identifier'] = parsed_alert['message']['event_trig_num']
+            parsed_alert['alert_identifier'] = self.parse_alert_identifier(parsed_alert['message'])
             parsed_alert['extracted_fields'] = self.parse_extracted_fields(parsed_alert['message'])
         except (AttributeError, KeyError, ParseError) as e:
             logger.log(msg=f'Unable to parse LVC Counterpart alert: {e}', level=logging.WARNING)
