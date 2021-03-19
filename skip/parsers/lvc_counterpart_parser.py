@@ -1,9 +1,17 @@
 from dateutil.parser import parse
 from datetime import datetime, timezone
+from gzip import decompress
+import io
 import logging
 import re
+import requests
 
+from astropy.io import fits
 from django.contrib.gis.geos import Point
+from gracedb_sdk import Client
+import healpy as hp
+import numpy as np
+import voeventparse as vp
 
 from skip.exceptions import ParseError
 from skip.parsers.base_parser import BaseParser
@@ -17,8 +25,74 @@ class LVCCounterpartParser(BaseParser):
     comment_warnings_prefix = 'ranks\.php for details.'
     comment_warnings_regex = re.compile(r'({prefix}).*$'.format(prefix=comment_warnings_prefix))
 
+    def __init__(self, *args, **kwargs):
+        self.gracedb_client = Client()
+
     def __repr__(self):
         return 'LVC Counterpart Parser'
+
+    def _get_confidence_regions(self, superevent):
+        confidence_regions = {}
+
+        try:
+            buffer = io.BytesIO()
+            buffer.write(decompress(requests.get(superevent.files.get()['bayestar.fits.gz'], stream=True).content))
+            buffer.seek(0)
+            hdul = fits.open(buffer, memmap=False)
+
+            # Get the total number of healpixels in the map
+            n_pixels = len(hdul[1].data)
+            # Covert that to the nside parameter
+            nside = hp.npix2nside(n_pixels)
+            # Sort the probabilities so we can do the cumulative sum on them
+            probabilities = hdul[1].data['PROB']
+            probabilities.sort()
+            # Reverse the list so that the largest pixels are first
+            probabilities = probabilities[::-1]
+            cumulative_probabilities = np.cumsum(probabilities)
+            # The number of pixels in the 90 (or 50) percent range is just given by the first set of pixels that add up
+            # to 0.9 (0.5)
+            index_90 = np.min(np.flatnonzero(cumulative_probabilities >= 0.9))
+            index_50 = np.min(np.flatnonzero(cumulative_probabilities >= 0.5))
+            # Because the healpixel projection has equal area pixels, the total area is just the heal pixel area * the number of
+            # heal pixels
+            healpixel_area = hp.nside2pixarea(nside, degrees=True)
+            confidence_regions['area_50'] = (index_50 + 1) * healpixel_area
+            confidence_regions['area_90'] = (index_90 + 1) * healpixel_area
+        except Exception as e:
+            logger.error(f'Unable to parse bayestar.fits.gz for confidence regions: {e}')
+        
+        return confidence_regions
+
+    def _get_data_from_voevent(self, alert):
+        voevent_data = {}
+        
+        try:
+            event_trigger_number = alert['event_trig_num']
+            if event_trigger_number == 'S190426':
+                event_trigger_number = 'S190426c'  # GCNs for this alert are published without the suffix
+            gracedb_superevent = self.gracedb_client.superevents[event_trigger_number]
+            latest_voevent = gracedb_superevent.voevents.get()[-1]
+            voevent_file = gracedb_superevent.files[latest_voevent['filename']].get()
+            voevent = vp.load(voevent_file)
+
+            for param in voevent.What.Param:
+                if param.attrib['name'] in ['FAR', 'Instruments']:
+                    voevent_data[param.attrib['name']] = param.attrib['value']
+
+            classification_group = voevent.What.find(".//Group[@type='Classification']")
+            for param in classification_group.Param:
+                voevent_data[param.attrib['name']] = param.attrib['value']
+
+            properties_group = voevent.What.find(".//Group[@type='Properties']")
+            for param in properties_group.Param:
+                voevent_data[param.attrib['name']] = param.attrib['value']
+
+            voevent_data.update(self._get_confidence_regions(gracedb_superevent))
+        except requests.exceptions.HTTPError as httpe:
+            logger.error(f'Unable to parse VO Event for alert {alert["event_trig_num"]}: {httpe}')
+
+        return voevent_data
 
     def parse_alert_identifier(self, alert):
         """
@@ -43,6 +117,8 @@ class LVCCounterpartParser(BaseParser):
 
         cw_match = self.comment_warnings_regex.search(alert['comments'])
         extracted_fields['comment_warnings'] = cw_match[0][len(self.comment_warnings_prefix):].strip() if cw_match else ''
+
+        extracted_fields.update(self._get_data_from_voevent(alert))
 
         return extracted_fields
 
@@ -114,7 +190,6 @@ class LVCCounterpartParser(BaseParser):
         parsed_alert = {'message': {}, 'extracted_fields': {}}
 
         try:
-            alert = alert['content']
             for line in alert.splitlines():
                 entry = line.split(':', 1)
                 if len(entry) > 1:

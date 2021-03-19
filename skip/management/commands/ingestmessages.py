@@ -56,7 +56,7 @@ class Command(BaseCommand):
             if msg is None:
                 continue
             if msg.error():
-                logger.log(msg=f'Error consuming message: {msg.error()}', level=logging.WARNING)
+                logger.warn(msg=f'Error consuming message: {msg.error()}')
                 continue
 
             # TODO: message handling should be moved into method
