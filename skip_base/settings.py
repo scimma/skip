@@ -211,7 +211,7 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'group.id': os.getenv('HOPSKOTCH_GROUP', 'skip-test'),
     'auto.offset.reset': 'latest',
     'security.protocol': 'sasl_ssl',
-    'sasl.mechanism': 'PLAIN',
+    'sasl.mechanism': 'SCRAM-SHA-512',
     'sasl.username': 'test',
     'sasl.password': get_secret('dev-skip-hopcreds'),
 
