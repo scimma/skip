@@ -37,7 +37,7 @@ class AlertFilter(filters.FilterSet):
     )
 
     def filter_event_trigger_number(self, queryset, name, value):
-        return queryset.filter(topic__name='lvc-counterpart', message__event_trig_num__icontains=value)
+        return queryset.filter(topic__name='lvc.lvc-counterpart', message__event_trig_num__icontains=value)
 
     def filter_cone_search(self, queryset, name, value):
         ra, dec, radius = value.split(',')
