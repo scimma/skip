@@ -88,6 +88,9 @@ class LVCCounterpartParser(BaseParser):
             for param in properties_group.Param:
                 voevent_data[param.attrib['name']] = param.attrib['value']
 
+            filename_parts = latest_voevent['filename'].split('.')[0].split('-')
+            voevent_data['data_version'] = f'{filename_parts[-1]} {filename_parts[-2]}'
+
             voevent_data.update(self._get_confidence_regions(gracedb_superevent))
         except requests.exceptions.HTTPError as httpe:
             logger.error(f'Unable to parse VO Event for alert {alert["event_trig_num"]}: {httpe}')
