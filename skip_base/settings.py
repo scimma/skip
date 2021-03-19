@@ -212,8 +212,8 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'auto.offset.reset': 'latest',
     'security.protocol': 'sasl_ssl',
     'sasl.mechanism': 'SCRAM-SHA-512',
-    'sasl.username': 'test',
-    'sasl.password': get_secret('dev-skip-hopcreds'),
+    'sasl.username': 'dcollom-a5c1897c',
+    'sasl.password': get_secret('dev-skip-hopskotch-password'),
 
     # system dependency: ssl.ca.location may need to be set
     # this does not seem to be necessary on Ubuntu. However,
