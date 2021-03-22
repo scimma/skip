@@ -193,6 +193,7 @@ class LVCCounterpartParser(BaseParser):
         parsed_alert = {'message': {}, 'extracted_fields': {}}
 
         try:
+            alert = alert['content']
             for line in alert.splitlines():
                 entry = line.split(':', 1)
                 if len(entry) > 1:
