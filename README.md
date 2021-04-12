@@ -55,5 +55,6 @@ git clone https://github.com/scimma/skip.git || git pull origin master
 cd skip
 # If migrations are needed, please see the note in the Troubleshooting section of this document
 $(aws ecr get-login --no-include-email --region us-west-2)
+docker-compose pull
 docker-compose up &
 ```
