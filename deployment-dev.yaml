@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: skip-deployment
+  labels:
+    app: skip
+
+spec:
+  restartPolicy: Never
+  volumes:
+    - name: skip-static
+      emptyDir:
+        sizeLimit: 1M
+  initContainers:
+    - name: skip-static
+      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
+      imagePullPolicy: IfNotPresent
+      command: ["sleep", "3600"]
+      env:
+        - name: AWS_ROLE_ARN
+          value: arn:aws:iam::585193511743:role/hopDev-k8s-hopdevel-skip
+    #   volumeMounts:
+    #     - name: skip-static
+    #       mountPath: /static
+    #       readOnly: false
+    #   command: ["python", "manage.py", "collectstatic", "--no-input"]
+    # - name: skip-migrate
+    #   image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
+    #   imagePullPolicy: IfNotPresent
+    #   env:
+    #     - name: AWS_ROLE_ARN
+    #       value: arn:aws:iam::585193511743:role/hopDev-k8s-hopdevel-skip
+    #   command: ["python", "manage.py", "migrate"]
+  containers:
+    - name: skip-web
+      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: skip-static
+          mountPath: /static
+          readOnly: false
+    - name: skip-ingest
+      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
+      imagePullPolicy: IfNotPresent
+      command: ["python", "manage.py", "ingestmessages"]

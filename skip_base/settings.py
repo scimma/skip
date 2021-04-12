@@ -110,7 +110,7 @@ DATABASES = {
         'ENGINE': os.getenv('DB_ENGINE', 'django.contrib.gis.db.backends.postgis'),
         'NAME': rds_db['DBName'],
         'USER': rds_db['MasterUsername'],
-        'PASSWORD': get_secret('skip-db-password'),
+        'PASSWORD': get_secret('skip-db-password-3'),
         'HOST': rds_db['Endpoint']['Address'],
         'PORT': rds_db['Endpoint']['Port'],
     },
