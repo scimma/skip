@@ -1,4 +1,5 @@
 astropy
+beautifulsoup4
 confluent_kafka
 django
 django-cors-headers

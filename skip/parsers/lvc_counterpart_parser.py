@@ -8,12 +8,14 @@ import requests
 
 from astropy.io import fits
 from django.contrib.gis.geos import Point
+from django.core.cache import cache
 from gracedb_sdk import Client
 import healpy as hp
 import numpy as np
 import voeventparse as vp
 
 from skip.exceptions import ParseError
+from skip.models import Alert
 from skip.parsers.base_parser import BaseParser
 
 
@@ -21,12 +23,23 @@ logger = logging.getLogger(__name__)
 
 
 class LVCCounterpartParser(BaseParser):
+    superevent_identifier_regex = re.compile(r'S[0-9]{6}[a-z]+')
     counterpart_identifier_regex = re.compile(r'\d?\w+\s\w\d+\.\d(\+|-)\d+')
     comment_warnings_prefix = 'ranks\.php for details.'
     comment_warnings_regex = re.compile(r'({prefix}).*$'.format(prefix=comment_warnings_prefix))
 
     def __init__(self, *args, **kwargs):
         self.gracedb_client = Client()
+
+    def _get_public_superevents(self, refresh_cache=False):
+        superevent_ids = cache.get('gracedb_superevents')
+
+        if not superevent_ids or refresh_cache:
+            print('cached')
+            superevent_ids = [se['superevent_id'] for se in self.gracedb_client.superevents.search(query='category: Production')]
+            cache.set('gracedb_superevents', superevent_ids)
+
+        return superevent_ids
 
     def __repr__(self):
         return 'LVC Counterpart Parser'
@@ -64,13 +77,15 @@ class LVCCounterpartParser(BaseParser):
         
         return confidence_regions
 
+    # TODO: deal with events for which the last alert was a retraction
+    # TODO: deal with events for which the skymap can't be parsed
     def _get_data_from_voevent(self, alert):
         voevent_data = {}
         
         try:
-            event_trigger_number = alert['event_trig_num']
-            if event_trigger_number == 'S190426':
-                event_trigger_number = 'S190426c'  # GCNs for this alert are published without the suffix
+            print(alert['alert_identifier'])
+            print(alert['alert_identifier'].split('_'))
+            event_trigger_number = alert['alert_identifier'].split('_')[0]
             gracedb_superevent = self.gracedb_client.superevents[event_trigger_number]
             latest_voevent = gracedb_superevent.voevents.get()[-1]
             voevent_file = gracedb_superevent.files[latest_voevent['filename']].get()
@@ -81,12 +96,16 @@ class LVCCounterpartParser(BaseParser):
                     voevent_data[param.attrib['name']] = param.attrib['value']
 
             classification_group = voevent.What.find(".//Group[@type='Classification']")
-            for param in classification_group.Param:
-                voevent_data[param.attrib['name']] = param.attrib['value']
+            print('classification')
+            if classification_group is not None:  # Retractions don't have classifications
+                for param in classification_group.findall('Param'):
+                    voevent_data[param.attrib['name']] = param.attrib['value']
 
             properties_group = voevent.What.find(".//Group[@type='Properties']")
-            for param in properties_group.Param:
-                voevent_data[param.attrib['name']] = param.attrib['value']
+            print('properties')
+            if properties_group is not None:
+                for param in properties_group.findall('Param'):
+                    voevent_data[param.attrib['name']] = param.attrib['value']
 
             filename_parts = latest_voevent['filename'].split('.')[0].split('-')
             voevent_data['data_version'] = f'{filename_parts[-1]} {filename_parts[-2]}'
@@ -102,6 +121,18 @@ class LVCCounterpartParser(BaseParser):
         Sources are of the format S123456_X1, that is, event trigger number + '_X' + source serial number
         """
         event_trigger_number = alert['event_trig_num']
+        if len(self.superevent_identifier_regex.findall(event_trigger_number)) == 0:
+            for superevent_id in self._get_public_superevents():
+                if event_trigger_number in superevent_id:
+                    event_trigger_number = superevent_id
+                    break
+            else:
+                for superevent_id in self._get_public_superevents(refresh_cache=True):
+                    if event_trigger_number in superevent_id:
+                        event_trigger_number = superevent_id
+                        break
+                else:
+                    logger.warn(f'Superevent {event_trigger_number} does not match any GraceDB event.')
         source_sernum = alert['sourse_sernum']
         return f'{event_trigger_number}_X{source_sernum}'
 
@@ -115,10 +146,10 @@ class LVCCounterpartParser(BaseParser):
     def parse_extracted_fields(self, alert):
         extracted_fields = {}
 
-        ci_match = self.counterpart_identifier_regex.search(alert['comments'])
+        ci_match = self.counterpart_identifier_regex.search(alert['message']['comments'])
         extracted_fields['counterpart_identifier'] = ci_match[0].strip() if ci_match else ''
 
-        cw_match = self.comment_warnings_regex.search(alert['comments'])
+        cw_match = self.comment_warnings_regex.search(alert['message']['comments'])
         extracted_fields['comment_warnings'] = cw_match[0][len(self.comment_warnings_prefix):].strip() if cw_match else ''
 
         extracted_fields.update(self._get_data_from_voevent(alert))
@@ -193,7 +224,9 @@ class LVCCounterpartParser(BaseParser):
         parsed_alert = {'message': {}, 'extracted_fields': {}}
 
         try:
-            alert = alert['content']
+            if isinstance(alert, dict):
+                if 'content' in alert.keys():  # Alerts sometimes come through with nested content, sometimes without
+                    alert = alert['content']
             for line in alert.splitlines():
                 entry = line.split(':', 1)
                 if len(entry) > 1:
@@ -209,16 +242,21 @@ class LVCCounterpartParser(BaseParser):
                     else:
                         parsed_alert['message']['cntrpart_dec'] += ' ' + entry[0].strip()
 
+            # TODO: how to make this update with new data rather than ignore duplicate alerts?
+            parsed_alert['alert_identifier'] = self.parse_alert_identifier(parsed_alert['message'])
+            # if Alert.objects.filter(alert_identifier=parsed_alert['alert_identifier']).exists():
+            #     logger.warn(msg=f"Alert {parsed_alert['alert_identifier']} already exists.")
+            #     return
+
             ra, dec = self.parse_coordinates(parsed_alert['message'])
             parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035)
 
             timestamp = self.parse_timestamp(parsed_alert['message'])
             parsed_alert['alert_timestamp'] = timestamp
 
-            parsed_alert['alert_identifier'] = self.parse_alert_identifier(parsed_alert['message'])
-            parsed_alert['extracted_fields'] = self.parse_extracted_fields(parsed_alert['message'])
+            parsed_alert['extracted_fields'] = self.parse_extracted_fields(parsed_alert)
         except (AttributeError, KeyError, ParseError) as e:
-            logger.log(msg=f'Unable to parse LVC Counterpart alert: {e}', level=logging.WARNING)
+            logger.warn(msg=f'Unable to parse LVC Counterpart alert {alert}: {e}')
             return
 
         return parsed_alert
