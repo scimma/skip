@@ -15,6 +15,7 @@ class Command(BaseCommand):
     Note: this produces 234 alerts, but there are 240 VO Events in GraceDB.
     """
     notice_link_regex = re.compile(r'notices_l/S\d{6}[a-z]+\.lvc')
+    slash_regex = re.compile(r'\/+')
 
     def handle(self, *args, **options):
         response = requests.get('https://gcn.gsfc.nasa.gov/lvc_events.html')
@@ -26,7 +27,7 @@ class Command(BaseCommand):
                 a = cell.find('a')
                 if a and self.notice_link_regex.findall(a['href']):
                     notices_response = requests.get(f"https://gcn.gsfc.nasa.gov/{a['href']}")
-                    notices = notices_response.text.split('//////////////////////////////////////////////////////////////////////')
+                    notices = re.split(r'\/{10,}', notices_response.text)
                     for notice in notices:
                         for line in notice.splitlines():
                             entry = line.split(':', 1)

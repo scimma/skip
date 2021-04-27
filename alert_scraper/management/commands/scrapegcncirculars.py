@@ -11,6 +11,9 @@ from alert_scraper.models import ScrapedAlert
 
 
 class Command(BaseCommand):
+    """
+    Produces 1572 alerts.
+    """
     superevent_regex = re.compile(r'S\d{6}[a-z]+')
     gcn_archive_urls = [
         'selected.html',
@@ -25,7 +28,7 @@ class Command(BaseCommand):
         for superevent_id in self.superevent_ids:
             print(superevent_id)
             response = requests.get(f'https://gcn.gsfc.nasa.gov/other/{superevent_id}.gcn3')
-            circulars = response.text.split('//////////////////////////////////////////////////////////////////////')
+            circulars = re.split(r'\/{10,}', response.text)
             for circular in circulars:
                 for line in circular.splitlines():
                     entry = line.split(':', 1)

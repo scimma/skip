@@ -63,7 +63,8 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'skip_dpd',
     'django_plotly_dash.apps.DjangoPlotlyDashConfig',
-    'bootstrap4'
+    'bootstrap4',
+    'alert_scraper'
 ]
 
 MIDDLEWARE = [

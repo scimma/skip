@@ -1,11 +1,14 @@
 from importlib import import_module
 import json
 import logging
+import time
 
 from confluent_kafka import Consumer
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
+from skip.models import Alert, Topic
 from skip.parsers.base_parser import DefaultParser
 
 logger = logging.getLogger(__name__)
@@ -52,7 +55,9 @@ class Command(BaseCommand):
 
         while True:
             logger.log(msg=f'Polling topics {HOPSKOTCH_TOPICS} with timeout of {HOPSKOTCH_CONSUMER_POLLING_TIMEOUT} seconds', level=logging.INFO)
-            msg = self.consumer.poll(HOPSKOTCH_CONSUMER_POLLING_TIMEOUT)
+            # msg = self.consumer.poll(HOPSKOTCH_CONSUMER_POLLING_TIMEOUT)
+            msg = self.consumer.consume(num_messages=1)
+            msg = msg[0]
             if msg is None:
                 continue
             if msg.error():
@@ -60,27 +65,35 @@ class Command(BaseCommand):
                 continue
 
             # TODO: message handling should be moved into method
-            topic = msg.topic()
+            topic_name = msg.topic()
+            topic, _ = Topic.objects.get_or_create(name=topic_name)
 
             decoded_message = msg.value().decode('utf-8')
             packet = json.loads(decoded_message)
 
             # For whatever reason, TNS packets needs to be serialized to JSON twice. This should probably be handled
             # elsewhere/differently
-            if topic == 'tns':
+            if topic.name == 'tns':
                 packet = json.loads(packet)
 
+            print(packet)
             logger.log(msg=f'Processing alert: {packet}', level=logging.INFO)
 
-            # Get the parser class, instantiate it, parse the alert, and save it
-            parser_class = get_parser_class(topic)
-            parser = parser_class()
-            alert_content = packet['content']
-            saved_alert = parser.save_alert(alert_content, topic)
+            alert = Alert.objects.create(topic=topic, message=packet)
 
-            if saved_alert is not None:
-                logger.log(msg=f'saved alert {saved_alert}', level=logging.INFO)
+            with transaction.atomic():
+                # Get the parser class, instantiate it, parse the alert, and save it
+                parser_class = get_parser_class(topic.name)
+                parser = parser_class()
+                alert.parsed = parser.parse(alert)
+                alert.save()
+
+            if alert.parsed is True:
+                logger.info(msg=f'saved alert {alert}')
+                time.sleep(60)
             else:
-                parser_class = DefaultParser().save_alert(alert_content, topic)
+                logger.warn(msg=f'Unable to parse alert {alert}')
+                time.sleep(1)
+
 
         self.consumer.close()

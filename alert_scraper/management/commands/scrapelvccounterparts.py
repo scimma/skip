@@ -23,8 +23,8 @@ class Command(BaseCommand):
             for cell in row.find_all('td'):
                 a = cell.find('a')
                 if a and self.counterpart_link_regex.findall(a['href']):
-                    counterparts_response = requests.get(f"https://gcn.gsfc.nasa.gov/{a['href']}")
-                    notices = counterparts_response.text.split('//////////////////////////////////////////////////////////////////////')
+                    notices_response = requests.get(f"https://gcn.gsfc.nasa.gov/{a['href']}")
+                    notices = re.split(r'\/{10,}', notices_response.text)
                     for notice in notices:
                         for line in notice.splitlines():
                             entry = line.split(':', 1)
