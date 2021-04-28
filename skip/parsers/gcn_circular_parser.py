@@ -41,10 +41,11 @@ class GCNCircularParser(BaseParser):
             event.save()
             return event
 
+    @staticmethod
     def is_gcn_circular(alert):  # TODO: this should be a common interface method with a generic name
         return all(x.lower() in alert.message['title'].lower() for x in ['GCN', 'CIRCULAR'])
 
-    def parse_date(self.alert):
+    def parse_date(self, alert):
         alert.alert_timestamp = parse(alert.message['date'], parserinfo=parserinfo(yearfirst=True))
 
     def parse_message(self, alert):

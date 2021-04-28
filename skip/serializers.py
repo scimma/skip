@@ -1,7 +1,7 @@
 from astropy.coordinates import Angle, SkyCoord
 from astropy import units
 
-from skip.models import Alert, Target, Topic
+from skip.models import Alert, Event, EventAttributes, Target, Topic
 from rest_framework import serializers
 
 
@@ -62,3 +62,46 @@ class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
         fields = ['id', 'name']
+
+
+class EventAttributesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventAttributes
+        fields = [
+            'tag',
+            'sequence_number',
+            'attributes'
+        ]
+
+
+class EventSerializer(serializers.ModelSerializer):
+    event_attributes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = [
+            'id',
+            'event_identifier',
+            'event_attributes'
+        ]
+
+    def get_event_attributes(self, instance):
+        event_attributes = instance.eventattributes_set.all().order_by('-sequence_number')
+        return EventAttributesSerializer(event_attributes, many=True).data
+
+
+class EventDetailSerializer(EventSerializer):
+    alerts = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = [
+            'id',
+            'event_identifier',
+            'event_attributes',
+            'alerts'
+        ]
+
+    def get_alerts(self, instance):
+        alerts = instance.alert_set.all().order_by('-alert_timestamp')
+        return AlertSerializer(alerts, many=True).data

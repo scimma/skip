@@ -30,7 +30,7 @@ class Event(models.Model):
     # TODO: add property for most recent event attributes
 
 
-class EventAttributesVersion(models.Model):
+class EventAttributes(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     attributes = models.JSONField(default=dict)
     tag = models.CharField(max_length=200)

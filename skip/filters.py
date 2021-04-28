@@ -110,3 +110,11 @@ class AlertFilter(filters.FilterSet):
                 aggregate_keyword_query = aggregate_keyword_query | query
 
         return queryset.filter(aggregate_keyword_query)
+
+
+class EventFilter(filters.FilterSet):
+    event_identifier = filters.CharFilter(method='filter_event_identifier', label='Event Identifier Search',
+                                          help_text='Search for event by identifier')
+
+    def filter_event_identifier(self, queryset, name, value):
+        return queryset.filter(event_identifier__icontains=value)

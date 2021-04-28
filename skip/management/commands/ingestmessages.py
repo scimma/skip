@@ -56,15 +56,14 @@ class Command(BaseCommand):
         while True:
             logger.log(msg=f'Polling topics {HOPSKOTCH_TOPICS} with timeout of {HOPSKOTCH_CONSUMER_POLLING_TIMEOUT} seconds', level=logging.INFO)
             # msg = self.consumer.poll(HOPSKOTCH_CONSUMER_POLLING_TIMEOUT)
-            msg = self.consumer.consume(num_messages=1)
-            msg = msg[0]
+            msg = self.consumer.consume(num_messages=1)  # TODO: remove
+            msg = msg[0]  # TODO: remove
             if msg is None:
                 continue
             if msg.error():
                 logger.warn(msg=f'Error consuming message: {msg.error()}')
                 continue
 
-            # TODO: message handling should be moved into method
             topic_name = msg.topic()
             topic, _ = Topic.objects.get_or_create(name=topic_name)
 
@@ -76,7 +75,6 @@ class Command(BaseCommand):
             if topic.name == 'tns':
                 packet = json.loads(packet)
 
-            print(packet)
             logger.log(msg=f'Processing alert: {packet}', level=logging.INFO)
 
             alert = Alert.objects.create(topic=topic, message=packet)
@@ -90,9 +88,9 @@ class Command(BaseCommand):
 
             if alert.parsed is True:
                 logger.info(msg=f'saved alert {alert}')
-                time.sleep(60)
+                time.sleep(1)
             else:
-                logger.warn(msg=f'Unable to parse alert {alert}')
+                logger.warn(msg=f'Unable to parse alert {alert}: {packet}')
                 time.sleep(1)
 
 

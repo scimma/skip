@@ -1,10 +1,11 @@
 import logging
-from dateutil.parser import parse
+from datetime import timezone
 
+from dateutil.parser import parse
 from django.contrib.gis.geos import Point
 
 from skip.exceptions import ParseError
-from skip.models import Alert, Event, EventAttributesVersion, Topic
+from skip.models import Alert, Event, EventAttributes, Topic
 from skip.parsers.base_parser import BaseParser
 
 
@@ -49,22 +50,22 @@ class GCNLVCNoticeParser(BaseParser):
 
     @staticmethod
     def associate_event(alert):
-        event, _ = Event.objects.get_or_create(event_identifier__icontains=alert.alert_identifier)
+        events = Event.objects.filter(event_identifier__icontains=alert.alert_identifier)
+        event = events.first() if events.exists() else Event.objects.create(event_identifier=alert.alert_identifier)
         event.alert_set.add(alert)
         event.save()
-        # TODO: create event attribute version
         return event
 
     @staticmethod
     def populate_event_attributes(alert, event):
-        attributes = {k: alert.message.get(k).split(' ', 1)[0] for k in ['far', 'prob_ns', 'prob_remnant', 'prob_bns',
+        attributes = {k: alert.message.get(k, '').split(' ', 1)[0] for k in ['far', 'prob_ns', 'prob_remnant', 'prob_bns',
                                                                          'prob_nsbh', 'prob_bbh', 'prob_massgap',
                                                                          'prob_terres']}
-        area_50, area_90 = GCNLVCNoticeParser.get_confidence_regions(alert.message['skymap_fits_url'])
-        attributes['area_50'] = area_50
-        attributes['area_90'] = area_90
+        area_50, area_90 = GCNLVCNoticeParser.get_confidence_regions(alert.message.get('skymap_fits_url', ''))
+        attributes['area_50'] = area_50 if area_50 else ''
+        attributes['area_90'] = area_90 if area_90 else ''
 
-        EventAttributesVersion.objects.create(
+        EventAttributes.objects.create(
             event=event,
             attributes=attributes,
             tag=alert.message['notice_type'],
@@ -76,12 +77,10 @@ class GCNLVCNoticeParser(BaseParser):
         return all(x.lower() in alert.message['title'].lower() for x in ['GCN', 'LVC', 'NOTICE'])
 
     def parse_message(self, alert):
-        print(alert.message)
         alert_message = alert.message['content']
         alert.message = {}  # we don't want the unparsed message stored alongside the parsed keys
         try:
             for line in alert_message.splitlines():
-                print(line)
                 entry = line.split(':', 1)
                 if len(entry) > 1:
                     if entry[0] == 'COMMENTS' and 'comments' in alert.message:
@@ -93,7 +92,7 @@ class GCNLVCNoticeParser(BaseParser):
             alert.message = alert_message  # restore the original message if parsing fails
 
     def parse_notice_date(self, alert):
-        alert.alert_timestamp = parse(alert.message['notice_date'])
+        alert.alert_timestamp = parse(alert.message['notice_date'], tzinfos={'UT': timezone.utc})
 
     def parse_trigger_number(self, alert):
         alert.alert_identifier = alert.message['trigger_num']
@@ -101,24 +100,17 @@ class GCNLVCNoticeParser(BaseParser):
     def parse(self, alert):
         try:
             self.parse_message(alert)
-            print('parse message')
 
             if not GCNLVCNoticeParser.is_gcn_lvc_notice(alert):
-                print('False')
                 return False
 
-            print('parse trigger number')
             self.parse_trigger_number(alert)
 
             event = GCNLVCNoticeParser.associate_event(alert)
-            GCNLVCNoticeParser.populate_event_attributes(alert, event)
-            print('associate event')
-            
+            GCNLVCNoticeParser.populate_event_attributes(alert, event)            
             
             self.parse_notice_date(alert)
-            print('parse notice_date')
         except Exception as e:
-            print(f'exception {e}')
             logger.warn(f'Unable to parse alert {alert} with parser {self}: {e}')
             return False
         
