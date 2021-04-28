@@ -8,14 +8,9 @@ import requests
 
 from astropy.io import fits
 from django.contrib.gis.geos import Point
-from django.core.cache import cache
-from gracedb_sdk import Client
-import healpy as hp
-import numpy as np
-import voeventparse as vp
 
 from skip.exceptions import ParseError
-from skip.models import Alert
+from skip.models import Alert, Event
 from skip.parsers.base_parser import BaseParser
 
 
@@ -71,7 +66,8 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
 
     @staticmethod
     def associate_event(alert):
-        event = Event.objects.get_or_create(event_identifier__icontains=alert.message['event_trig_num'])
+        events = Event.objects.filter(event_identifier__icontains=alert.message.get('event_trig_num', ''))
+        event = events.first() if events.exists() else Event.objects.create(event_identifier=alert.message.get('event_trig_num', ''))
         event.alert_set.add(alert)
         event.save()
         return event
@@ -89,17 +85,17 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
         alert.alert_identifier = f'{event_trigger_number}_X{source_sernum}'
 
     def parse_coordinates(self, alert):
-        raw_ra = alert['cntrpart_ra'].split(',')[0]
-        raw_dec = alert['cntrpart_dec'].split(',')[0]
-        alert.right_ascension = raw_ra.split('d', 1)[0]
-        alert.declination = raw_dec.split('d', 1)[0]
+        raw_ra = alert.message['cntrpart_ra'].split(',')[0]
+        raw_dec = alert.message['cntrpart_dec'].split(',')[0]
+        right_ascension = raw_ra.split('d', 1)[0]
+        declination = raw_dec.split('d', 1)[0]
+        alert.coordinates = Point(float(right_ascension), float(declination), srid=4035)
 
     def parse_message(self, alert):
-        print('parse message')
         alert_message = alert.message['content']
         alert.message = {}
         try:
-            for line in alert_message.splitlines():
+            for line in alert_message.strip().splitlines():  # Remove leading/trailing newlines
                 entry = line.split(':', 1)
                 if len(entry) > 1:
                     if entry[0] == 'COMMENTS' and 'comments' in alert.message:
@@ -115,7 +111,7 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
                         alert.message['cntrpart_dec'] += ' ' + entry[0].strip()
         except Exception as e:
             logger.warn(f'parse_message failed for {alert}: {e}')
-            alert.message = alert_message
+            alert.message = {'content': alert_message}
 
     def parse_obs_timestamp(self, alert):
         # TODO: the alert contains three different timestamps, we should determine which we want. This method
@@ -133,19 +129,19 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
     def parse(self, alert):
         try:
             self.parse_message(alert)
-            print('parsed_message')
 
             if not GCNLVCCounterpartNoticeParser.is_gcn_lvc_counterpart_notice(alert):
-                print('False')
                 return False
 
             GCNLVCCounterpartNoticeParser.associate_event(alert)
 
-            self.parse_obs_timestamp(alert)
-            print('parsed timestamp')
+            self.parse_event_trig_num(alert)
 
             self.parse_coordinates(alert)
-            print('parsed coordinates')
+
+            self.parse_obs_timestamp(alert)
+
+            self.parse_coordinates(alert)
         except Exception as e:
             logger.warn(f'Unable to parse alert {alert} with parser {self}: {e}')
             return False

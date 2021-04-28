@@ -89,7 +89,7 @@ class GCNLVCNoticeParser(BaseParser):
                         alert.message[entry[0].lower()] = entry[1].strip()
         except Exception as e:
             logger.warn(f'parse_message failed for {alert}: {e}')
-            alert.message = alert_message  # restore the original message if parsing fails
+            alert.message = {'content': alert_message}  # restore the original message if parsing fails
 
     def parse_notice_date(self, alert):
         alert.alert_timestamp = parse(alert.message['notice_date'], tzinfos={'UT': timezone.utc})
