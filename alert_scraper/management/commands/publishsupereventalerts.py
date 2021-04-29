@@ -10,20 +10,23 @@ from alert_scraper.models import ScrapedAlert
 class Command(BaseCommand):
 
     # topic_mapping = {
-    #     'lvc_notice': 'gcn',
-    #     'lvc_counterpart': 'lvc.lvc-counterpart',
-    #     'lvc_circular': 'gcn-circular'
+    #     'lvc_notice': 'gcn-test',
+    #     'lvc_counterpart': 'lvc.lvc-counterpart-test',
+    #     'lvc_circular': 'gcn-circular-test'
     # }
 
     def handle(self, *args, **options):
-        scraped_alerts = ScrapedAlert.objects.all().order_by('timestamp')
+        scraped_alerts = ScrapedAlert.objects.filter(alert_type='lvc_circular').order_by('timestamp')
         stream = Stream(auth=Auth(settings.HOPSKOTCH_CONSUMER_CONFIGURATION['sasl.username'],
                                   settings.HOPSKOTCH_CONSUMER_CONFIGURATION['sasl.password']))
 
-        with stream.open('kafka://dev.hop.scimma.org:9092/lvc.gcn-circular-test', 'w') as s:
+        with stream.open('kafka://dev.hop.scimma.org:9092/lvc.gcn-test', 'w') as s:
             for alert in scraped_alerts:
                 if alert.alert_type == 'lvc_circular':
-                    circular = GCNCircular.load(alert.alert)
-                    s.write(circular)
-                # else:
-                #     s.write(alert.alert)
+                    try:
+                        circular = GCNCircular.load(alert.alert_data.read().decode('utf-8'))
+                        s.write(circular)
+                    except:
+                        pass
+                else:
+                    s.write(alert.alert)
