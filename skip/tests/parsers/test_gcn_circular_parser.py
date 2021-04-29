@@ -58,25 +58,30 @@ class TestGCNCircularParser(TestCase):
         self.assertTrue(event.event_identifier=='S190510g')
 
 
-@override_settings(HOPSKOTCH_PARSERS={'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser'})
-@patch('skip.management.commands.ingestmessages.Consumer')
+# @override_settings(HOPSKOTCH_PARSERS={'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser'})
 class TestGCNCircularIngestion(TestCase):
     def setUp(self):
         pass
 
+    @patch('skip.management.commands.ingestmessages.Consumer')
     def test_ingest(self, mock_consumer):
-        # mock_message = MagicMock()
-        # # mock_message.topic.return_value = 'gcn-circular'
+        mock_message = MagicMock()
+        mock_message.configure_mock(**{
+            'topic.return_value': 'gcn-circular',
+            'value.return_value': test_superevent_circular_message,
+            'error.return_value': None
+        })
+        # mock_message.topic.return_value = 'gcn-circular'
         # mock_message.value.return_value = test_superevent_circular_message
         # mock_message.error.return_value = None
-        # print(mock_message.error())
-        # print(mock_message.value())
-        # mock_consumer.poll.return_value = mock_message
-        # print(mock_consumer.poll().error())
-        # print(mock_consumer.poll().value())
-        mock_consumer = MockConsumer()
-        print(mock_consumer.poll(1).error())
+        print(mock_message.error())
+        print(mock_message.value())
+        mock_consumer.poll.return_value = mock_message
+        print(mock_consumer.poll().error())
+        print(mock_consumer.poll().value())
+        # mock_consumer = MockConsumer()
+        # print(mock_consumer.poll(1).error())
 
-        # call_command('ingestmessages')
-        command = Command()
-        command.handle()
+        call_command('ingestmessages')
+        # command = Command()
+        # command.handle()
