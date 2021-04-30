@@ -59,7 +59,7 @@ migrations for the dev database must be executed locally.
 For the time being, on the terraformed EC2 instance:
 ```bash
 sudo yum install git
-git clone https://github.com/scimma/skip.git || git pull origin master
+git clone https://github.com/scimma/skip.git || git pull origin main
 cd skip
 # If migrations are needed, please see the note in the Troubleshooting section of this document
 $(aws ecr get-login --no-include-email --region us-west-2)
