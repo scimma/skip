@@ -132,17 +132,17 @@ CORS_ORIGIN_ALLOW_ALL = True
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 rds_db = get_rds_db('skip-postgres')
+db_pass = get_secret('skip-db-password-3')
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', 'django.contrib.gis.db.backends.postgis'),
-        'NAME': rds_db['DBName'],
-        'USER': rds_db['MasterUsername'],
-        'PASSWORD': get_secret('skip-db-password-3'),
-        'HOST': rds_db['Endpoint']['Address'],
-        'PORT': rds_db['Endpoint']['Port'],
+        'NAME': rds_db['DBName'] if rds_db else 'skip',
+        'USER': rds_db['MasterUsername'] if rds_db else 'postgres',
+        'PASSWORD': db_pass if db_pass else 'postgres',
+        'HOST': rds_db['Endpoint']['Address'] if rds_db else 'localhost',
+        'PORT': rds_db['Endpoint']['Port'] if rds_db else '5432',
     },
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
