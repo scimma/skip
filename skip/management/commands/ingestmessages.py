@@ -57,7 +57,7 @@ class Command(BaseCommand):
             if kafka_message.error():
                 logger.warn(f'Error consuming message: {kafka_message.error()}')
                 # continue
-                return
+                return  # TODO: maybe don't completely stop ingesting if this happens
 
             topic_name = kafka_message.topic()
             topic, _ = Topic.objects.get_or_create(name=topic_name)
