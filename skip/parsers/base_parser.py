@@ -1,16 +1,12 @@
 from abc import ABC, abstractmethod
 from gzip import decompress
 import io
-import json
 import logging
-import re
 import requests
 
 from astropy.io import fits
 import healpy as hp
 import numpy as np
-
-from skip.models import Alert, Topic
 
 
 logger = logging.getLogger(__name__)
@@ -48,20 +44,21 @@ class BaseParser(ABC):
             # to 0.9 (0.5)
             index_90 = np.min(np.flatnonzero(cumulative_probabilities >= 0.9))
             index_50 = np.min(np.flatnonzero(cumulative_probabilities >= 0.5))
-            # Because the healpixel projection has equal area pixels, the total area is just the heal pixel area * the number of
-            # heal pixels
+            # Because the healpixel projection has equal area pixels, the total area is just the heal pixel area * the
+            # number of heal pixels
             healpixel_area = hp.nside2pixarea(nside, degrees=True)
             area_50 = (index_50 + 1) * healpixel_area
             area_90 = (index_90 + 1) * healpixel_area
-            
+
             return area_50, area_90
         except Exception as e:
             logger.error(f'Unable to parse {skymap_fits_url} for confidence regions: {e}')
-        
+
         return None, None
 
     def is_alert_parsable(self):
         return False
+
 
 class DefaultParser(BaseParser):
 

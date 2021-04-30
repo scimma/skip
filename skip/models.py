@@ -1,5 +1,3 @@
-import json
-
 from django.contrib.gis.db import models as gis_models
 from django.db import models
 
@@ -22,7 +20,7 @@ class Topic(models.Model):
 
 
 class Event(models.Model):
-    event_identifier = models.CharField(max_length=200)
+    identifier = models.CharField(max_length=200)
     # localization = gis_models.PolygonField(null=True, blank=True)  # TODO: figure out correct model field
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -41,10 +39,10 @@ class Alert(models.Model):
     # target_id = models.ForeignKey(Target, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.PROTECT)
     events = models.ManyToManyField(Event)
-    alert_identifier = models.CharField(max_length=200)
-    alert_timestamp = models.DateTimeField(null=True, blank=True)
+    identifier = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(null=True, blank=True)
     coordinates = gis_models.PointField(null=True, blank=True)
-    message = models.JSONField(default=dict)  # rename to parsed_message
+    parsed_message = models.JSONField(default=dict)
     raw_message = models.JSONField(default=dict)
     parsed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
@@ -52,5 +50,5 @@ class Alert(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['alert_timestamp'], name='alert_timestamp_idx'),
+            models.Index(fields=['timestamp'], name='timestamp_idx'),
         ]

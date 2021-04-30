@@ -1,4 +1,4 @@
-from astropy.coordinates import Angle, SkyCoord
+from astropy.coordinates import Angle
 from astropy import units
 
 from skip.models import Alert, Event, EventAttributes, Target, Topic
@@ -20,17 +20,15 @@ class AlertSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
-        fields = [
-                #   'target',
-                  'id',
-                  'alert_identifier',
-                  'alert_timestamp',
+        fields = ['id',
+                  'identifier',
+                  'timestamp',
                   'topic',
                   'right_ascension',
                   'declination',
                   'right_ascension_sexagesimal',
                   'declination_sexagesimal',
-                  'message',
+                  'parsed_message',
                   'raw_message',
                   'created',
                   'modified']
@@ -81,7 +79,7 @@ class EventSerializer(serializers.HyperlinkedModelSerializer):
         model = Event
         fields = [
             'id',
-            'event_identifier',
+            'identifier',
             'event_detail',
             'event_attributes'
         ]
@@ -98,11 +96,11 @@ class EventDetailSerializer(EventSerializer):
         model = Event
         fields = [
             'id',
-            'event_identifier',
+            'identifier',
             'event_attributes',
             'alerts'
         ]
 
     def get_alerts(self, instance):
-        alerts = instance.alert_set.all().order_by('-alert_timestamp')
+        alerts = instance.alert_set.all().order_by('-timestamp')
         return AlertSerializer(alerts, many=True).data

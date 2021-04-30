@@ -1,12 +1,10 @@
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-from confluent_kafka import Message
 from django.core.management import call_command
 from django.test import override_settings, TestCase
 
-from skip.management.commands.ingestmessages import Command
-from skip.models import Alert, Event, Topic
+from skip.models import Alert, Topic
 from skip.parsers.gcn_circular_parser import GCNCircularParser
 
 
@@ -28,18 +26,18 @@ test_superevent_circular_message = {
 class TestGCNCircularParser(TestCase):
     def setUp(self):
         topic = Topic.objects.create(name='gcn-circular')
-        self.alert = Alert.objects.create(message=test_superevent_circular_message, topic=topic)
+        self.alert = Alert.objects.create(raw_message=test_superevent_circular_message, topic=topic)
 
     def test_parse(self):
         parser = GCNCircularParser(self.alert)
         parsed = parser.parse()
-        
+
         self.assertTrue(parsed)
-        self.assertDictContainsSubset({'title': 'GCN CIRCULAR', 'number': '24442'}, self.alert.message)
-        self.assertEqual(datetime(2019, 5, 10, 5, 51, 38, tzinfo=timezone.utc), self.alert.alert_timestamp)
-        self.assertEqual('24442', self.alert.alert_identifier)
+        self.assertDictContainsSubset({'title': 'GCN CIRCULAR', 'number': '24442'}, self.alert.parsed_message)
+        self.assertEqual(datetime(2019, 5, 10, 5, 51, 38, tzinfo=timezone.utc), self.alert.timestamp)
+        self.assertEqual('24442', self.alert.identifier)
         event = self.alert.events.first()
-        self.assertTrue(event.event_identifier=='S190510g')
+        self.assertTrue(event.identifier == 'S190510g')
 
 
 @override_settings(HOPSKOTCH_PARSERS={'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser'})

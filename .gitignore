@@ -117,3 +117,6 @@ ENV/
 .ropeproject
 
 _static/
+
+# Scraping script stores GCN circular files here
+alerts/

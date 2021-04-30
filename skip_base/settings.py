@@ -191,6 +191,8 @@ STATICFILES_FINDERS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'skip.pagination.SkipPagination',
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_VERSION': 'v2',
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -230,12 +232,12 @@ HOPSKOTCH_TOPICS = [
 ]
 
 HOPSKOTCH_PARSERS = {
-    'gcn': 'skip.parsers.gcn_parser.GCNParser',
-    'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser',
-    'lvc.lvc-counterpart': 'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
-    'tns': 'skip.parsers.tns_parser.TNSParser',
-    'tomtoolkit-test': 'skip.parsers.tomtoolkit_parser.TOMToolkitParser',
-    'default': 'skip.parsers.base_parser.DefaultParser'
+    'gcn': ['skip.parsers.gcn_parser.GCNParser'],
+    'gcn-circular': ['skip.parsers.gcn_circular_parser.GCNCircularParser'],
+    'lvc.lvc-counterpart': ['skip.parsers.lvc_counterpart_parser.LVCCounterpartParser'],
+    # 'tns': ['skip.parsers.tns_parser.TNSParser'],
+    # 'tomtoolkit-test': ['skip.parsers.tomtoolkit_parser.TOMToolkitParser'],
+    'default': ['skip.parsers.base_parser.DefaultParser']
 }
 
 # NOTE: The existence of this setting makes migration impossible

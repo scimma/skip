@@ -1,47 +1,48 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # read in README
 this_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_dir, 'README.md'), 'rb') as f:
-    long_description = f.read().decode().strip()
-
-# requirements
-install_requires = [
-    "hop-client >= 0.4",
-]
-extras_require = {
-    'dev': ['pytest', 'pytest-console-scripts', 'pytest-cov', 'flake8', 'flake8-black'],
-    'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinxcontrib-programoutput'],
-}
+    long_description=f.read().decode().strip()
 
 setup(
-    name = 'hop-alert-api-app',
-    description = 'Django REST api to Hop Alerts Database',
-    long_description = long_description,
-    long_description_content_type = 'text/markdown',
-    url = 'https://www.github.com/scimma/hop-alert-api-app',
-    author = 'Lindy Lindstrom, David Collom',
-    author_email = '{llindstrom, dcollom}@lco.global',
-    license = 'BSD 3-Clause',
-
-    packages = ['hop.apps.alert-api'],
-
-    entry_points = {
-        'console_scripts': [
-            'hop-alert-api = hop.apps.alert-api.__main__:main',
-        ],
+    name='skip',
+    description='Django REST api to Hop Alerts Database',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    url='https://www.github.com/scimma/skip',
+    author='Lindy Lindstrom, David Collom',
+    author_email='{llindstrom, dcollom}@lco.global',
+    license='BSD 3-Clause',
+    packages=find_packages(),
+    python_requires='>=3.6.*',
+    install_requires=[
+        'astropy>=4.2',
+        'beautifulsoup4>=4.9',
+        'boto3',
+        'confluent_kafka>=1.6',
+        'Django>=3.1',
+        'django-cors-headers>=3.7',
+        'django-extensions>=3.1',
+        'django-filter>=2.4',
+        'djangorestframework>=3.12',
+        'gracedb-sdk~=0.1',
+        'healpy>=1.14',
+        "hop-client >= 0.4",
+        'numpy>=1.20',
+        'psycopg2>=2.8',
+        'python-dateutil>=2.8',
+        'whitenoise>=5.2',
+        'voevent-parse~=1.0',
+    ],
+    extras_require={
+        'dev': ['pytest', 'pytest-console-scripts', 'pytest-cov', 'flake8', 'flake8-black'],
+        'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinxcontrib-programoutput'],
     },
-
-    python_requires = '>=3.6.*',
-    install_requires = install_requires,
-    extras_require = extras_require,
-    setup_requires = ['setuptools_scm'],
-    use_scm_version = {
-        'write_to': 'hop/apps/alert-api/_version.py'
-    },
-
-    classifiers = [
+    setup_requires=['setuptools_scm'],
+    use_scm_version=True,
+    classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',

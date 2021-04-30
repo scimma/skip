@@ -2,7 +2,7 @@ import math
 
 from django.db.models import Q
 from django_filters import rest_framework as filters
-from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
+from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.measure import D
 
 from skip.models import Topic
@@ -20,11 +20,11 @@ class TopicFilter(filters.FilterSet):
 
 class AlertFilter(filters.FilterSet):
     keyword = filters.CharFilter(method='filter_keyword_search', label='Keyword Search', help_text='Text Search')
-    cone_search = filters.CharFilter(method='filter_cone_search', label='Cone Search', 
+    cone_search = filters.CharFilter(method='filter_cone_search', label='Cone Search',
                                      help_text='RA, Dec, Radius (degrees)')
     polygon_search = filters.CharFilter(method='filter_polygon_search', label='Polygon Search',
                                         help_text='Comma-separated pairs of space-delimited coordinates (degrees).')
-    alert_timestamp = filters.DateTimeFromToRangeFilter()
+    timestamp = filters.DateTimeFromToRangeFilter()
     role = filters.ChoiceFilter(choices=(('utility', 'Utility'), ('test', 'Test'), ('observation', 'Observation')),
                                 null_label='None')
     topic = filters.ModelMultipleChoiceFilter(queryset=Topic.objects.all())
@@ -32,12 +32,12 @@ class AlertFilter(filters.FilterSet):
 
     ordering = filters.OrderingFilter(
         fields=(
-            ('alert_timestamp', 'alert_timestamp')
+            ('timestamp', 'timestamp')
         )
     )
 
     def filter_event_trigger_number(self, queryset, name, value):
-        return queryset.filter(topic__name='lvc.lvc-counterpart', message__event_trig_num__icontains=value)
+        return queryset.filter(topic__name='lvc.lvc-counterpart', parsed_message__event_trig_num__icontains=value)
 
     def filter_cone_search(self, queryset, name, value):
         ra, dec, radius = value.split(',')
@@ -52,7 +52,7 @@ class AlertFilter(filters.FilterSet):
     def filter_polygon_search(self, queryset, name, value):
         # TODO: document this function in a docstring with example value input and resulting vertices
         value += ', ' + value.split(', ', 1)[0]
-        vertices = tuple((float(v.split(' ')[0]), float(v.split(' ')[1])) for v in value.split(', '))  # TODO: explain this!
+        vertices = tuple((float(v.split(' ')[0]), float(v.split(' ')[1])) for v in value.split(', '))  # TODO: explain!
         polygon = Polygon(vertices, srid=4035)
         return queryset.filter(coordinates__within=polygon)
 
@@ -78,24 +78,24 @@ class AlertFilter(filters.FilterSet):
         # a keypath is a list of dictionary keys that drill into nested alert dictionaries.
         keypaths = [
             # GCN keypaths
-            ['message', 'How', 'Description'],
-            ['message', 'Who', 'Author', 'shortName'],
-            ['message', 'Who', 'Author', 'contactName'],
-            ['message', 'Who', 'Author', 'contactEmail'],
-            ['message', 'Why', 'Inference', 'Concept'],
+            ['parsed_message', 'How', 'Description'],
+            ['parsed_message', 'Who', 'Author', 'shortName'],
+            ['parsed_message', 'Who', 'Author', 'contactName'],
+            ['parsed_message', 'Who', 'Author', 'contactEmail'],
+            ['parsed_message', 'Why', 'Inference', 'Concept'],
             # TNS keypaths
-            ['alert_identifier'],
-            ['message', 'discoverer'],
-            ['message', 'name'],
-            ['message', 'objname'],
-            ['message', 'hostname'],
-            ['message', 'internal_name'],
-            ['message', 'internal_names'],
+            ['identifier'],
+            ['parsed_message', 'discoverer'],
+            ['parsed_message', 'name'],
+            ['parsed_message', 'objname'],
+            ['parsed_message', 'hostname'],
+            ['parsed_message', 'internal_name'],
+            ['parsed_message', 'internal_names'],
             # GCN/LVC Counterpart Notice keypaths,
-            ['message', 'telescope'],
-            ['message', 'submitter'],
-            ['message', 'comments'],
-            ['message', 'title'],
+            ['parsed_message', 'telescope'],
+            ['parsed_message', 'submitter'],
+            ['parsed_message', 'comments'],
+            ['parsed_message', 'title'],
         ]
         # a Q-object query looks like Q(key1__key2__ ... __icontains=query_keyword)
         # for dynamic Q-object creation use **kwargs,  like this: Q(**{"keypath__icontains" : query_keyword})
@@ -113,8 +113,8 @@ class AlertFilter(filters.FilterSet):
 
 
 class EventFilter(filters.FilterSet):
-    event_identifier = filters.CharFilter(method='filter_event_identifier', label='Event Identifier Search',
-                                          help_text='Search for event by identifier')
+    identifier = filters.CharFilter(method='filter_identifier', label='Event Identifier Search',
+                                    help_text='Search for event by identifier')
 
-    def filter_event_identifier(self, queryset, name, value):
-        return queryset.filter(event_identifier__icontains=value)
+    def filter_identifier(self, queryset, name, value):
+        return queryset.filter(identifier__icontains=value)

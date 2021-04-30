@@ -4,7 +4,6 @@ from dateutil.parser import parse
 from django.contrib.gis.geos import Point
 
 from skip.exceptions import ParseError
-from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
 
 
@@ -27,10 +26,10 @@ class GCNParser(BaseParser):
         #        "C2":"5.1321"
         #     },
         #     "Error2Radius":"0.0000"
-        #   }   
-        # 
-        # Though the VOEvent specification implies that RA will always be in the `C1` field and Dec will always 
-        # be in the `C2` field, it offers no guarantee of this. However, we are making the assumption that it is 
+        #   }
+        #
+        # Though the VOEvent specification implies that RA will always be in the `C1` field and Dec will always
+        # be in the `C2` field, it offers no guarantee of this. However, we are making the assumption that it is
         # consistent.
         coordinates = {}
 
@@ -40,11 +39,10 @@ class GCNParser(BaseParser):
             dec = coordinates['Value2']['C2']
             return ra, dec
         except (AttributeError, KeyError):
-            # TODO: Alerts of role `utility` do not have coordinates--should be explored further rather than 
+            # TODO: Alerts of role `utility` do not have coordinates--should be explored further rather than
             # shunted off to the DefaultParser
             logger.log(msg=f'Unable to parse coordinates: {coordinates}', level=logging.WARN)
             raise ParseError('Unable to parse coordinates')
-
 
     def parse_alert(self, alert):
         parsed_alert = {}

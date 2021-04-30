@@ -1,18 +1,14 @@
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
 
-from confluent_kafka import Message
-from django.core.management import call_command
-from django.test import override_settings, TestCase
+from django.test import TestCase
 
-from skip.management.commands.ingestmessages import Command
 from skip.models import Alert, Event, Topic
 from skip.parsers.gcn_lvc_counterpart_notice_parser import GCNLVCCounterpartNoticeParser
 
 
 test_superevent_counterpart_notice = {
     'format': 'blob',
-    'content': 
+    'content':
         'TITLE:            GCN/LVC COUNTERPART NOTICE\n'
         'NOTICE_DATE:      Fri 26 Apr 19 23:13:39 UT\n'
         'NOTICE_TYPE:      Other \n'
@@ -57,21 +53,21 @@ test_superevent_counterpart_notice = {
 class TestGCNLVCCounterpartNoticeParser(TestCase):
     def setUp(self):
         topic = Topic.objects.create(name='lvc.lvc-counterpart')
-        self.alert = Alert.objects.create(message=test_superevent_counterpart_notice, topic=topic)
-        self.event = Event.objects.create(event_identifier='S190426c')
+        self.alert = Alert.objects.create(raw_message=test_superevent_counterpart_notice, topic=topic)
+        self.event = Event.objects.create(identifier='S190426c')
 
     def test_parse(self):
         parser = GCNLVCCounterpartNoticeParser(self.alert)
         parsed = parser.parse()
-        
+
         self.assertTrue(parsed)
         self.assertDictContainsSubset({'title': 'GCN/LVC COUNTERPART NOTICE', 'event_trig_num': 'S190426'},
-                                      self.alert.message)
-        self.assertEqual(datetime(2019, 4, 26, 20, 24, 8, tzinfo=timezone.utc), self.alert.alert_timestamp)
-        self.assertEqual('S190426_X2', self.alert.alert_identifier)
+                                      self.alert.parsed_message)
+        self.assertEqual(datetime(2019, 4, 26, 20, 24, 8, tzinfo=timezone.utc), self.alert.timestamp)
+        self.assertEqual('S190426_X2', self.alert.identifier)
         self.assertEqual(299.8851, self.alert.coordinates.coords[0])
         self.assertEqual(40.7310, self.alert.coordinates.coords[1])
 
         event = self.alert.events.first()
-        self.assertTrue(event.event_identifier=='S190426c')
+        self.assertTrue(event.identifier == 'S190426c')
         self.assertEqual(Event.objects.count(), 1)

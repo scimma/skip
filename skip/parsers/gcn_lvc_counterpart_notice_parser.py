@@ -1,16 +1,11 @@
 from dateutil.parser import parse
 from datetime import datetime, timezone
-from gzip import decompress
-import io
 import logging
 import re
-import requests
 
-from astropy.io import fits
 from django.contrib.gis.geos import Point
 
-from skip.exceptions import ParseError
-from skip.models import Alert, Event
+from skip.models import Event
 from skip.parsers.base_parser import BaseParser
 
 
@@ -23,7 +18,7 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
 
     TITLE:            GCN/LVC COUNTERPART NOTICE
     NOTICE_DATE:      Fri 26 Apr 19 23:13:39 UT
-    NOTICE_TYPE:      Other 
+    NOTICE_TYPE:      Other
     CNTRPART_RA:      299.8851d {+19h 59m 32.4s} (J2000),
                       300.0523d {+20h 00m 12.5s} (current),
                       299.4524d {+19h 57m 48.5s} (1950)
@@ -51,13 +46,13 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
     MOON_ILLUM:       50 [%]
     GAL_COORDS:        76.19,  5.74 [deg] galactic lon,lat of the counterpart
     ECL_COORDS:       317.73, 59.32 [deg] ecliptic lon,lat of the counterpart
-    COMMENTS:         LVC Counterpart.  
-    COMMENTS:         This matches a catalogued X-ray source: 1RXH J195932.6+404351  
-    COMMENTS:         This source has been given a rank of 2  
-    COMMENTS:         Ranks indicate how likely the object is to be  
-    COMMENTS:         the GW counterpart. Ranks go from 1-4 with   
-    COMMENTS:         1 being the most likely and 4 the least.  
-    COMMENTS:         See http://www.swift.ac.uk/ranks.php for details.  
+    COMMENTS:         LVC Counterpart.
+    COMMENTS:         This matches a catalogued X-ray source: 1RXH J195932.6+404351
+    COMMENTS:         This source has been given a rank of 2
+    COMMENTS:         Ranks indicate how likely the object is to be
+    COMMENTS:         the GW counterpart. Ranks go from 1-4 with
+    COMMENTS:         1 being the most likely and 4 the least.
+    COMMENTS:         See http://www.swift.ac.uk/ranks.php for details.
     COMMENTS:         MAY match a known transient, will be checked manually.
     """
 
@@ -65,61 +60,64 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
         return 'GCN/LVC Counterpart Notice Parser'
 
     def associate_event(self):
-        events = Event.objects.filter(event_identifier__icontains=self.alert.message.get('event_trig_num', ''))
-        event = events.first() if events.exists() else Event.objects.create(event_identifier=self.alert.message.get('event_trig_num', ''))
+        events = Event.objects.filter(identifier__icontains=self.alert.parsed_message.get('event_trig_num', ''))
+        event = (events.first()
+                 if events.exists()
+                 else Event.objects.create(identifier=self.alert.parsed_message.get('event_trig_num', '')))
         event.alert_set.add(self.alert)
         event.save()
         return event
 
     def is_alert_parsable(self):
-        return all(x.lower() in self.alert.message['title'].lower() for x in ['GCN', 'LVC', 'COUNTERPART', 'NOTICE'])
+        return all(
+            x.lower() in self.alert.parsed_message['title'].lower() for x in ['GCN', 'LVC', 'COUNTERPART', 'NOTICE']
+        )
 
     def parse_event_trig_num(self):
         """
         Sources are of the format S123456_X1, that is, event trigger number + '_X' + source serial number
         """
-        event_trigger_number = self.alert.message['event_trig_num']
-        source_sernum = self.alert.message['sourse_sernum']
-        self.alert.alert_identifier = f'{event_trigger_number}_X{source_sernum}'
+        event_trigger_number = self.alert.parsed_message['event_trig_num']
+        source_sernum = self.alert.parsed_message['sourse_sernum']
+        self.alert.identifier = f'{event_trigger_number}_X{source_sernum}'
 
     def parse_coordinates(self):
-        raw_ra = self.alert.message['cntrpart_ra'].split(',')[0]
-        raw_dec = self.alert.message['cntrpart_dec'].split(',')[0]
+        raw_ra = self.alert.parsed_message['cntrpart_ra'].split(',')[0]
+        raw_dec = self.alert.parsed_message['cntrpart_dec'].split(',')[0]
         right_ascension = raw_ra.split('d', 1)[0]
         declination = raw_dec.split('d', 1)[0]
         self.alert.coordinates = Point(float(right_ascension), float(declination), srid=4035)
 
     def parse_message(self):
-        alert_message = self.alert.message['content']
-        self.alert.message = {}
+        alert_message = self.alert.raw_message['content']
         try:
+            last_entry = ''
             for line in alert_message.strip().splitlines():  # Remove leading/trailing newlines
                 entry = line.split(':', 1)
                 if len(entry) > 1:
-                    if entry[0] == 'COMMENTS' and 'comments' in self.alert.message:
-                        self.alert.message['comments'] += entry[1].lstrip()
+                    if entry[0] == 'COMMENTS' and 'comments' in self.alert.parsed_message:
+                        self.alert.parsed_message['comments'] += entry[1].lstrip()
                     else:
-                        self.alert.message[entry[0].lower()] = entry[1].strip()
+                        self.alert.parsed_message[entry[0].lower()] = entry[1].strip()
                 else:
                     # RA is parsed first, so append to RA if dec hasn't been parsed
                     if last_entry == 'cntrpart_ra':
-                        self.alert.message['cntrpart_ra'] += ' ' + entry[0].strip()
+                        self.alert.parsed_message['cntrpart_ra'] += ' ' + entry[0].strip()
                     elif last_entry == 'cntrpart_dec':
-                        self.alert.message['cntrpart_dec'] += ' ' + entry[0].strip()
+                        self.alert.parsed_message['cntrpart_dec'] += ' ' + entry[0].strip()
                 last_entry = entry[0]
         except Exception as e:
             logger.warn(f'parse_message failed for {self.alert}: {e}')
-            self.alert.message = {'content': alert_message}
 
     def parse_obs_timestamp(self):
-        raw_datestamp = self.alert.message['obs_date']
-        raw_timestamp = self.alert.message['obs_time']
+        raw_datestamp = self.alert.parsed_message['obs_date']
+        raw_timestamp = self.alert.parsed_message['obs_time']
         datestamp = re.search(r'\d{2}\/\d{2}\/\d{2}', raw_datestamp)
         parsed_datestamp = parse(datestamp.group(0), yearfirst=True)
         timestamp = re.search(r'\d{2}:\d{2}:\d{2}\.\d{2}', raw_timestamp)
         parsed_timestamp = parse(timestamp.group(0))
         combined_datetime = datetime.combine(parsed_datestamp, parsed_timestamp.time(), tzinfo=timezone.utc)
-        self.alert.alert_timestamp = combined_datetime
+        self.alert.timestamp = combined_datetime
 
     def parse(self):
         try:

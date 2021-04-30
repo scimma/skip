@@ -4,7 +4,6 @@ import logging
 from django.contrib.gis.geos import Point
 
 from skip.exceptions import ParseError
-from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
 
 
@@ -22,11 +21,9 @@ class TOMToolkitParser(BaseParser):
         try:
             ra = alert['ra']
             dec = alert['dec']
-            print(ra)
-            print(dec)
             return ra, dec
         except (AttributeError, KeyError):
-            # TODO: Alerts of role `utility` appear to have a different format--should be explored further rather than 
+            # TODO: Alerts of role `utility` appear to have a different format--should be explored further rather than
             # shunted off to the DefaultParser
             raise ParseError('Unable to parse coordinates')
 
@@ -37,8 +34,6 @@ class TOMToolkitParser(BaseParser):
             # parsed_alert['alert_identifier'] = ''
             parsed_alert['alert_timestamp'] = datetime.now()
             ra, dec = self.parse_coordinates(alert)
-            print(float(ra))
-            print(float(dec))
             parsed_alert['coordinates'] = Point(float(ra), float(dec), srid=4035)
         except (AttributeError, KeyError, ParseError) as e:
             logger.log(msg=f'Unable to parse TOM Toolkit alert: {e}', level=logging.WARN)

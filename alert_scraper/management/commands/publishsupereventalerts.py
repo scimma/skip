@@ -16,7 +16,7 @@ class Command(BaseCommand):
     # }
 
     def handle(self, *args, **options):
-        scraped_alerts = ScrapedAlert.objects.filter(alert_type='lvc_circular').order_by('timestamp')
+        scraped_alerts = ScrapedAlert.objects.all().order_by('timestamp')
         stream = Stream(auth=Auth(settings.HOPSKOTCH_CONSUMER_CONFIGURATION['sasl.username'],
                                   settings.HOPSKOTCH_CONSUMER_CONFIGURATION['sasl.password']))
 

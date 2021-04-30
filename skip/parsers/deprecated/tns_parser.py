@@ -4,7 +4,6 @@ import logging
 from django.contrib.gis.geos import Point
 
 from skip.exceptions import ParseError
-from skip.models import Alert, Topic
 from skip.parsers.base_parser import BaseParser
 
 
@@ -24,7 +23,7 @@ class TNSParser(BaseParser):
             dec = alert['decdeg']
             return ra, dec
         except (AttributeError, KeyError):
-            # TODO: Alerts of role `utility` appear to have a different format--should be explored further rather than 
+            # TODO: Alerts of role `utility` appear to have a different format--should be explored further rather than
             # shunted off to the DefaultParser
             raise ParseError('Unable to parse coordinates')
 

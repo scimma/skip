@@ -2,10 +2,8 @@ import logging
 import re
 
 from dateutil.parser import parse, parserinfo
-from django.contrib.gis.geos import Point
 
-from skip.exceptions import ParseError
-from skip.models import Alert, Event, Topic
+from skip.models import Event
 from skip.parsers.base_parser import BaseParser
 
 
@@ -54,34 +52,32 @@ class GCNCircularParser(BaseParser):
 
     def associate_event(self):
         superevent_regex = re.compile(r'S\d{6}[a-z]?')  # matches S######??, where ?? is any number of lowercase alphas
-        matches = superevent_regex.findall(self.alert.message['subject'])
+        matches = superevent_regex.findall(self.alert.parsed_message['subject'])
         if len(matches) > 0:
-            events = Event.objects.filter(event_identifier__icontains=matches[0])
-            event = events.first() if events.exists() else Event.objects.create(event_identifier=matches[0])
+            events = Event.objects.filter(identifier__icontains=matches[0])
+            event = events.first() if events.exists() else Event.objects.create(identifier=matches[0])
             event.alert_set.add(self.alert)
             event.save()
             return event
 
     def is_alert_parsable(self):  # TODO: this should be a common interface method with a generic name
-        return all(x.lower() in self.alert.message['title'].lower() for x in ['GCN', 'CIRCULAR'])
+        return all(x.lower() in self.alert.parsed_message['title'].lower() for x in ['GCN', 'CIRCULAR'])
 
     def parse_date(self):
-        self.alert.alert_timestamp = parse(self.alert.message['date'], parserinfo=parserinfo(yearfirst=True))
+        self.alert.timestamp = parse(self.alert.parsed_message['date'], parserinfo=parserinfo(yearfirst=True))
 
     def parse_message(self):
-        alert_message = self.alert.message['content']
-        self.alert.message = {}
+        alert_message = self.alert.raw_message['content']
         try:
-            self.alert.message['body'] = alert_message['body']
+            self.alert.parsed_message['body'] = alert_message['body']
             alert_header = alert_message['header']
             for key, value in alert_header.items():
-                self.alert.message[key.lower()] = value.strip()
+                self.alert.parsed_message[key.lower()] = value.strip()
         except Exception as e:
             logger.warn(f'parse_message failed for {self.alert}: {e}')
-            self.alert.message = alert_message
 
     def parse_number(self):
-        self.alert.alert_identifier = self.alert.message['number']
+        self.alert.identifier = self.alert.parsed_message['number']
 
     def parse(self):
         try:
@@ -90,12 +86,12 @@ class GCNCircularParser(BaseParser):
             if not self.is_alert_parsable():
                 return False
 
-            event = self.associate_event()
+            self.associate_event()
 
             self.parse_date()
 
             self.parse_number()
-        
+
         except Exception as e:
             logger.warn(f'Unable to parse alert {self.alert} with parser {self}: {e}')
             return False

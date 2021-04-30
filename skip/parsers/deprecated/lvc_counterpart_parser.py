@@ -15,7 +15,6 @@ import numpy as np
 import voeventparse as vp
 
 from skip.exceptions import ParseError
-from skip.models import Alert
 from skip.parsers.base_parser import BaseParser
 
 
@@ -25,7 +24,7 @@ logger = logging.getLogger(__name__)
 class LVCCounterpartParser(BaseParser):
     superevent_identifier_regex = re.compile(r'S[0-9]{6}[a-z]+')
     counterpart_identifier_regex = re.compile(r'\d?\w+\s\w\d+\.\d(\+|-)\d+')
-    comment_warnings_prefix = 'ranks\.php for details.'
+    comment_warnings_prefix = 'ranks\.php for details.'  # noqa
     comment_warnings_regex = re.compile(r'({prefix}).*$'.format(prefix=comment_warnings_prefix))
 
     def __init__(self, *args, **kwargs):
@@ -35,8 +34,8 @@ class LVCCounterpartParser(BaseParser):
         superevent_ids = cache.get('gracedb_superevents')
 
         if not superevent_ids or refresh_cache:
-            print('cached')
-            superevent_ids = [se['superevent_id'] for se in self.gracedb_client.superevents.search(query='category: Production')]
+            superevent_ids = [se['superevent_id']
+                              for se in self.gracedb_client.superevents.search(query='category: Production')]
             cache.set('gracedb_superevents', superevent_ids)
 
         return superevent_ids
@@ -67,24 +66,22 @@ class LVCCounterpartParser(BaseParser):
             # to 0.9 (0.5)
             index_90 = np.min(np.flatnonzero(cumulative_probabilities >= 0.9))
             index_50 = np.min(np.flatnonzero(cumulative_probabilities >= 0.5))
-            # Because the healpixel projection has equal area pixels, the total area is just the heal pixel area * the number of
-            # heal pixels
+            # Because the healpixel projection has equal area pixels, the total area is just the heal pixel area * the
+            # number of heal pixels
             healpixel_area = hp.nside2pixarea(nside, degrees=True)
             confidence_regions['area_50'] = (index_50 + 1) * healpixel_area
             confidence_regions['area_90'] = (index_90 + 1) * healpixel_area
         except Exception as e:
             logger.error(f'Unable to parse bayestar.fits.gz for confidence regions: {e}')
-        
+
         return confidence_regions
 
     # TODO: deal with events for which the last alert was a retraction
     # TODO: deal with events for which the skymap can't be parsed
     def _get_data_from_voevent(self, alert):
         voevent_data = {}
-        
+
         try:
-            print(alert['alert_identifier'])
-            print(alert['alert_identifier'].split('_'))
             event_trigger_number = alert['alert_identifier'].split('_')[0]
             gracedb_superevent = self.gracedb_client.superevents[event_trigger_number]
             latest_voevent = gracedb_superevent.voevents.get()[-1]
@@ -96,13 +93,11 @@ class LVCCounterpartParser(BaseParser):
                     voevent_data[param.attrib['name']] = param.attrib['value']
 
             classification_group = voevent.What.find(".//Group[@type='Classification']")
-            print('classification')
             if classification_group is not None:  # Retractions don't have classifications
                 for param in classification_group.findall('Param'):
                     voevent_data[param.attrib['name']] = param.attrib['value']
 
             properties_group = voevent.What.find(".//Group[@type='Properties']")
-            print('properties')
             if properties_group is not None:
                 for param in properties_group.findall('Param'):
                     voevent_data[param.attrib['name']] = param.attrib['value']
@@ -150,7 +145,8 @@ class LVCCounterpartParser(BaseParser):
         extracted_fields['counterpart_identifier'] = ci_match[0].strip() if ci_match else ''
 
         cw_match = self.comment_warnings_regex.search(alert['message']['comments'])
-        extracted_fields['comment_warnings'] = cw_match[0][len(self.comment_warnings_prefix):].strip() if cw_match else ''
+        extracted_fields['comment_warnings'] = (cw_match[0][len(self.comment_warnings_prefix):].strip()
+                                                if cw_match else '')
 
         extracted_fields.update(self._get_data_from_voevent(alert))
 

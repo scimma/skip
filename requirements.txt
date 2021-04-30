@@ -1,19 +1,2 @@
-astropy
-beautifulsoup4
-confluent_kafka
-django
-django-cors-headers
-django-extensions
-django-filter
-djangorestframework
-fastavro
-gracedb-sdk~=0.1
-healpy
-numpy
-psycopg2==2.8.4
-python-dateutil
-hop-client
-whitenoise
-voevent-parse~=1.0
-boto3
+-e .[test]
 git+git://github.com/TOMToolkit/skip-django.git#egg=skip-django
