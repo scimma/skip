@@ -44,6 +44,12 @@ class GCNLVCNoticeParser(BaseParser):
     COMMENTS:         LIGO-Livingston Observatory contributed to this candidate event.  
     COMMENTS:         VIRGO Observatory contributed to this candidate event.
     """
+    # alert = None
+    # event = None
+
+    # def __init__(self, alert, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.alert = alert
 
     def __repr__(self):
         return 'GCN/LVC Notice Parser'
@@ -62,6 +68,7 @@ class GCNLVCNoticeParser(BaseParser):
                                                                          'prob_nsbh', 'prob_bbh', 'prob_massgap',
                                                                          'prob_terres']}
         area_50, area_90 = GCNLVCNoticeParser.get_confidence_regions(alert.message.get('skymap_fits_url', ''))
+        print(area_50)
         attributes['area_50'] = area_50 if area_50 else ''
         attributes['area_90'] = area_90 if area_90 else ''
 
@@ -74,6 +81,7 @@ class GCNLVCNoticeParser(BaseParser):
 
     @staticmethod
     def is_gcn_lvc_notice(alert):
+        print(alert.message)
         return all(x.lower() in alert.message['title'].lower() for x in ['GCN', 'LVC', 'NOTICE'])
 
     def parse_message(self, alert):

@@ -104,26 +104,23 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
                         alert.message[entry[0].lower()] = entry[1].strip()
                 else:
                     # RA is parsed first, so append to RA if dec hasn't been parsed
-                    # TODO: modify this to just keep track of the most recent key
-                    if 'cntrpart_dec' not in alert.message:
+                    if last_entry == 'cntrpart_ra':
                         alert.message['cntrpart_ra'] += ' ' + entry[0].strip()
-                    else:
+                    elif last_entry == 'cntrpart_dec':
                         alert.message['cntrpart_dec'] += ' ' + entry[0].strip()
+                last_entry = entry[0]
         except Exception as e:
             logger.warn(f'parse_message failed for {alert}: {e}')
             alert.message = {'content': alert_message}
 
     def parse_obs_timestamp(self, alert):
-        # TODO: the alert contains three different timestamps, we should determine which we want. This method
-        # currently returns the observation timestamp, rather than the notice or event timestamps.
         raw_datestamp = alert.message['obs_date']
         raw_timestamp = alert.message['obs_time']
         datestamp = re.search(r'\d{2}\/\d{2}\/\d{2}', raw_datestamp)
         parsed_datestamp = parse(datestamp.group(0), yearfirst=True)
         timestamp = re.search(r'\d{2}:\d{2}:\d{2}\.\d{2}', raw_timestamp)
         parsed_timestamp = parse(timestamp.group(0))
-        combined_datetime = datetime.combine(parsed_datestamp, parsed_timestamp.time())
-        combined_datetime.replace(tzinfo=timezone.utc)
+        combined_datetime = datetime.combine(parsed_datestamp, parsed_timestamp.time(), tzinfo=timezone.utc)
         alert.alert_timestamp = combined_datetime
 
     def parse(self, alert):
@@ -140,8 +137,6 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
             self.parse_coordinates(alert)
 
             self.parse_obs_timestamp(alert)
-
-            self.parse_coordinates(alert)
         except Exception as e:
             logger.warn(f'Unable to parse alert {alert} with parser {self}: {e}')
             return False

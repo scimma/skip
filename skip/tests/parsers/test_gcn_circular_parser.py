@@ -25,22 +25,6 @@ test_superevent_circular_message = {
 }
 
 
-class MockMessage:
-    def value(self):
-        return test_superevent_circular_message
-
-    def error(self):
-        return None
-
-
-class MockConsumer:
-    def subscribe(self, topics: list):
-        return
-
-    def poll(self, timeout: int):
-        return MockMessage()
-
-
 class TestGCNCircularParser(TestCase):
     def setUp(self):
         topic = Topic.objects.create(name='gcn-circular')
@@ -58,7 +42,7 @@ class TestGCNCircularParser(TestCase):
         self.assertTrue(event.event_identifier=='S190510g')
 
 
-# @override_settings(HOPSKOTCH_PARSERS={'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser'})
+@override_settings(HOPSKOTCH_PARSERS={'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser'})
 class TestGCNCircularIngestion(TestCase):
     def setUp(self):
         pass
