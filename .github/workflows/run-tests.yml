@@ -21,7 +21,7 @@ jobs:
   run_tests:
     services:
       postgres:
-        image: postgis:11-2.5
+        image: postgis/postgis:11-2.5
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
