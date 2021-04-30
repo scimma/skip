@@ -9,6 +9,6 @@ WORKDIR /skip
 
 COPY requirements.txt /skip
 
-RUN pip --no-cache-dir install gunicorn[gevent] -r /skip/requirements.txt
+RUN pip install --upgrade pip && pip --no-cache-dir install gunicorn[gevent] -r /skip/requirements.txt
 
 COPY . /skip

@@ -33,12 +33,15 @@ setup(
         'numpy>=1.20',
         'psycopg2>=2.8',
         'python-dateutil>=2.8',
+        'skip-django',
         'whitenoise>=5.2',
         'voevent-parse~=1.0',
     ],
+    dependency_links=['git+git://github.com/TOMToolkit/skip-django.git#egg=skip-django'],
     extras_require={
         'dev': ['pytest', 'pytest-console-scripts', 'pytest-cov', 'flake8', 'flake8-black'],
         'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinxcontrib-programoutput'],
+        'docker': ['gunicorn[gevent]']
     },
     setup_requires=['setuptools_scm'],
     use_scm_version=True,
