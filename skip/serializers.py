@@ -30,9 +30,8 @@ class AlertSerializer(serializers.ModelSerializer):
                   'declination',
                   'right_ascension_sexagesimal',
                   'declination_sexagesimal',
-                  'role',
-                  'extracted_fields',
                   'message',
+                  'raw_message',
                   'created',
                   'modified']
 
@@ -74,14 +73,16 @@ class EventAttributesSerializer(serializers.ModelSerializer):
         ]
 
 
-class EventSerializer(serializers.ModelSerializer):
+class EventSerializer(serializers.HyperlinkedModelSerializer):
     event_attributes = serializers.SerializerMethodField()
+    event_detail = serializers.HyperlinkedIdentityField(view_name='skip:event-detail', read_only=True)
 
     class Meta:
         model = Event
         fields = [
             'id',
             'event_identifier',
+            'event_detail',
             'event_attributes'
         ]
 
