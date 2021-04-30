@@ -131,17 +131,27 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-rds_db = get_rds_db('skip-postgres')
-db_pass = get_secret('skip-db-password-3')
+def get_default_database_configuration():
+    database_configuration = {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'skip',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+    rds_db = get_rds_db('skip-postgres')
+    if rds_db is not None:
+        database_configuration['NAME'] = rds_db['DBName']
+        database_configuration['USER'] = rds_db['MasterUsername']
+        database_configuration['PASSWORD'] = get_secret('skip-db-password-3')
+        database_configuration['HOST'] = rds_db['Endpoint']['Address']
+        database_configuration['POST'] = rds_db['Endpoint']['Port']
+
+    return database_configuration
+
 DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.contrib.gis.db.backends.postgis'),
-        'NAME': rds_db['DBName'] if rds_db else 'skip',
-        'USER': rds_db['MasterUsername'] if rds_db else 'postgres',
-        'PASSWORD': db_pass if db_pass else 'postgres',
-        'HOST': rds_db['Endpoint']['Address'] if rds_db else 'localhost',
-        'PORT': rds_db['Endpoint']['Port'] if rds_db else '5432',
-    },
+    'default': get_default_database_configuration()
 }
 
 # Password validation
