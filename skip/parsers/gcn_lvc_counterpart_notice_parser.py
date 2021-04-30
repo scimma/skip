@@ -64,81 +64,79 @@ class GCNLVCCounterpartNoticeParser(BaseParser):
     def __repr__(self):
         return 'GCN/LVC Counterpart Notice Parser'
 
-    @staticmethod
-    def associate_event(alert):
-        events = Event.objects.filter(event_identifier__icontains=alert.message.get('event_trig_num', ''))
-        event = events.first() if events.exists() else Event.objects.create(event_identifier=alert.message.get('event_trig_num', ''))
-        event.alert_set.add(alert)
+    def associate_event(self):
+        events = Event.objects.filter(event_identifier__icontains=self.alert.message.get('event_trig_num', ''))
+        event = events.first() if events.exists() else Event.objects.create(event_identifier=self.alert.message.get('event_trig_num', ''))
+        event.alert_set.add(self.alert)
         event.save()
         return event
 
-    @staticmethod
-    def is_gcn_lvc_counterpart_notice(alert):
-        return all(x.lower() in alert.message['title'].lower() for x in ['GCN', 'LVC', 'COUNTERPART', 'NOTICE'])
+    def is_alert_parsable(self):
+        return all(x.lower() in self.alert.message['title'].lower() for x in ['GCN', 'LVC', 'COUNTERPART', 'NOTICE'])
 
-    def parse_event_trig_num(self, alert):
+    def parse_event_trig_num(self):
         """
         Sources are of the format S123456_X1, that is, event trigger number + '_X' + source serial number
         """
-        event_trigger_number = alert.message['event_trig_num']
-        source_sernum = alert.message['sourse_sernum']
-        alert.alert_identifier = f'{event_trigger_number}_X{source_sernum}'
+        event_trigger_number = self.alert.message['event_trig_num']
+        source_sernum = self.alert.message['sourse_sernum']
+        self.alert.alert_identifier = f'{event_trigger_number}_X{source_sernum}'
 
-    def parse_coordinates(self, alert):
-        raw_ra = alert.message['cntrpart_ra'].split(',')[0]
-        raw_dec = alert.message['cntrpart_dec'].split(',')[0]
+    def parse_coordinates(self):
+        raw_ra = self.alert.message['cntrpart_ra'].split(',')[0]
+        raw_dec = self.alert.message['cntrpart_dec'].split(',')[0]
         right_ascension = raw_ra.split('d', 1)[0]
         declination = raw_dec.split('d', 1)[0]
-        alert.coordinates = Point(float(right_ascension), float(declination), srid=4035)
+        self.alert.coordinates = Point(float(right_ascension), float(declination), srid=4035)
 
-    def parse_message(self, alert):
-        alert_message = alert.message['content']
-        alert.message = {}
+    def parse_message(self):
+        alert_message = self.alert.message['content']
+        self.alert.message = {}
         try:
             for line in alert_message.strip().splitlines():  # Remove leading/trailing newlines
                 entry = line.split(':', 1)
                 if len(entry) > 1:
-                    if entry[0] == 'COMMENTS' and 'comments' in alert.message:
-                        alert.message['comments'] += entry[1].lstrip()
+                    if entry[0] == 'COMMENTS' and 'comments' in self.alert.message:
+                        self.alert.message['comments'] += entry[1].lstrip()
                     else:
-                        alert.message[entry[0].lower()] = entry[1].strip()
+                        self.alert.message[entry[0].lower()] = entry[1].strip()
                 else:
                     # RA is parsed first, so append to RA if dec hasn't been parsed
                     if last_entry == 'cntrpart_ra':
-                        alert.message['cntrpart_ra'] += ' ' + entry[0].strip()
+                        self.alert.message['cntrpart_ra'] += ' ' + entry[0].strip()
                     elif last_entry == 'cntrpart_dec':
-                        alert.message['cntrpart_dec'] += ' ' + entry[0].strip()
+                        self.alert.message['cntrpart_dec'] += ' ' + entry[0].strip()
                 last_entry = entry[0]
         except Exception as e:
-            logger.warn(f'parse_message failed for {alert}: {e}')
-            alert.message = {'content': alert_message}
+            logger.warn(f'parse_message failed for {self.alert}: {e}')
+            self.alert.message = {'content': alert_message}
 
-    def parse_obs_timestamp(self, alert):
-        raw_datestamp = alert.message['obs_date']
-        raw_timestamp = alert.message['obs_time']
+    def parse_obs_timestamp(self):
+        raw_datestamp = self.alert.message['obs_date']
+        raw_timestamp = self.alert.message['obs_time']
         datestamp = re.search(r'\d{2}\/\d{2}\/\d{2}', raw_datestamp)
         parsed_datestamp = parse(datestamp.group(0), yearfirst=True)
         timestamp = re.search(r'\d{2}:\d{2}:\d{2}\.\d{2}', raw_timestamp)
         parsed_timestamp = parse(timestamp.group(0))
         combined_datetime = datetime.combine(parsed_datestamp, parsed_timestamp.time(), tzinfo=timezone.utc)
-        alert.alert_timestamp = combined_datetime
+        self.alert.alert_timestamp = combined_datetime
 
-    def parse(self, alert):
+    def parse(self):
         try:
-            self.parse_message(alert)
+            self.parse_message()
 
-            if not GCNLVCCounterpartNoticeParser.is_gcn_lvc_counterpart_notice(alert):
+            if not self.is_alert_parsable():
                 return False
 
-            GCNLVCCounterpartNoticeParser.associate_event(alert)
+            self.associate_event()
 
-            self.parse_event_trig_num(alert)
+            self.parse_event_trig_num()
 
-            self.parse_coordinates(alert)
+            self.parse_coordinates()
 
-            self.parse_obs_timestamp(alert)
+            self.parse_obs_timestamp()
         except Exception as e:
-            logger.warn(f'Unable to parse alert {alert} with parser {self}: {e}')
+            logger.warn(f'Unable to parse alert {self.alert} with parser {self}: {e}')
             return False
 
         return True

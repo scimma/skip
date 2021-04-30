@@ -17,9 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 class BaseParser(ABC):
+    event = None
+
+    def __init__(self, alert, *args, **kwargs):
+        self.alert = alert
 
     @abstractmethod
-    def parse(self, alert):
+    def parse(self):
         pass
 
     @staticmethod
@@ -56,11 +60,13 @@ class BaseParser(ABC):
         
         return None, None
 
+    def is_alert_parsable(self):
+        return False
 
 class DefaultParser(BaseParser):
 
     def __repr__(self):
         return 'Default Parser'
 
-    def parse(self, alert):
-        return {'message': alert}
+    def parse(self):
+        return {'message': self.alert}

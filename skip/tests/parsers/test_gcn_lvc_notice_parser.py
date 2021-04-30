@@ -48,11 +48,11 @@ class TestGCNLVCNoticeParser(TestCase):
         topic = Topic.objects.create(name='gcn')
         self.alert = Alert.objects.create(message=test_superevent_notice, topic=topic)
 
-    # TODO: mock out get_confidence_regions
-    # @patch('skip.parsers.gcn_lvc_notice_plaintext_parser.get_confidence_regions')
-    def test_parse(self):
-        parser = GCNLVCNoticeParser()
-        parsed = parser.parse(self.alert)
+    @patch('skip.parsers.gcn_lvc_notice_plaintext_parser.GCNLVCNoticeParser.get_confidence_regions')
+    def test_parse(self, mock_get_regions):
+        mock_get_regions.return_value = (1, 2)
+        parser = GCNLVCNoticeParser(self.alert)
+        parsed = parser.parse()
         
         self.assertTrue(parsed)
         self.assertDictContainsSubset({'title': 'GCN/LVC NOTICE', 'trigger_num': 'S200316bj'}, self.alert.message)

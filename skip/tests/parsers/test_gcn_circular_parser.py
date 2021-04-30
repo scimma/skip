@@ -31,8 +31,8 @@ class TestGCNCircularParser(TestCase):
         self.alert = Alert.objects.create(message=test_superevent_circular_message, topic=topic)
 
     def test_parse(self):
-        parser = GCNCircularParser()
-        parsed = parser.parse(self.alert)
+        parser = GCNCircularParser(self.alert)
+        parsed = parser.parse()
         
         self.assertTrue(parsed)
         self.assertDictContainsSubset({'title': 'GCN CIRCULAR', 'number': '24442'}, self.alert.message)

@@ -44,82 +44,71 @@ class GCNLVCNoticeParser(BaseParser):
     COMMENTS:         LIGO-Livingston Observatory contributed to this candidate event.  
     COMMENTS:         VIRGO Observatory contributed to this candidate event.
     """
-    # alert = None
-    # event = None
-
-    # def __init__(self, alert, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self.alert = alert
 
     def __repr__(self):
         return 'GCN/LVC Notice Parser'
 
-    @staticmethod
-    def associate_event(alert):
-        events = Event.objects.filter(event_identifier__icontains=alert.alert_identifier)
-        event = events.first() if events.exists() else Event.objects.create(event_identifier=alert.alert_identifier)
-        event.alert_set.add(alert)
+    def associate_event(self):
+        events = Event.objects.filter(event_identifier__icontains=self.alert.alert_identifier)
+        event = events.first() if events.exists() else Event.objects.create(event_identifier=self.alert.alert_identifier)
+        event.alert_set.add(self.alert)
         event.save()
         return event
 
-    @staticmethod
-    def populate_event_attributes(alert, event):
-        attributes = {k: alert.message.get(k, '').split(' ', 1)[0] for k in ['far', 'prob_ns', 'prob_remnant', 'prob_bns',
-                                                                         'prob_nsbh', 'prob_bbh', 'prob_massgap',
-                                                                         'prob_terres']}
-        area_50, area_90 = GCNLVCNoticeParser.get_confidence_regions(alert.message.get('skymap_fits_url', ''))
-        print(area_50)
+    def populate_event_attributes(self, event):
+        attributes = {k: self.alert.message.get(k, '').split(' ', 1)[0] for k in ['far', 'prob_ns', 'prob_remnant',
+                                                                                  'prob_bns', 'prob_nsbh', 'prob_bbh',
+                                                                                  'prob_massgap', 'prob_terres']}
+        area_50, area_90 = self.get_confidence_regions('skymap_fits_url')
         attributes['area_50'] = area_50 if area_50 else ''
         attributes['area_90'] = area_90 if area_90 else ''
 
         EventAttributes.objects.create(
             event=event,
             attributes=attributes,
-            tag=alert.message['notice_type'],
-            sequence_number=alert.message['sequence_num']
+            tag=self.alert.message['notice_type'],
+            sequence_number=self.alert.message['sequence_num']
         )
 
-    @staticmethod
-    def is_gcn_lvc_notice(alert):
-        print(alert.message)
-        return all(x.lower() in alert.message['title'].lower() for x in ['GCN', 'LVC', 'NOTICE'])
+    def is_alert_parsable(self):
+        return all(x.lower() in self.alert.message['title'].lower() for x in ['GCN', 'LVC', 'NOTICE'])
 
-    def parse_message(self, alert):
-        alert_message = alert.message['content']
-        alert.message = {}  # we don't want the unparsed message stored alongside the parsed keys
+    def parse_message(self):
+        alert_message = self.alert.message['content']
+        self.alert.message = {}  # we don't want the unparsed message stored alongside the parsed keys
         try:
             for line in alert_message.splitlines():
                 entry = line.split(':', 1)
                 if len(entry) > 1:
-                    if entry[0] == 'COMMENTS' and 'comments' in alert.message:
-                        alert.message['comments'] += entry[1].lstrip()
+                    if entry[0] == 'COMMENTS' and 'comments' in self.alert.message:
+                        self.alert.message['comments'] += entry[1].lstrip()
                     else:
-                        alert.message[entry[0].lower()] = entry[1].strip()
+                        self.alert.message[entry[0].lower()] = entry[1].strip()
         except Exception as e:
-            logger.warn(f'parse_message failed for {alert}: {e}')
-            alert.message = {'content': alert_message}  # restore the original message if parsing fails
+            logger.warn(f'parse_message failed for {self.alert}: {e}')
+            self.alert.message = {'content': alert_message}  # restore the original message if parsing fails
 
-    def parse_notice_date(self, alert):
-        alert.alert_timestamp = parse(alert.message['notice_date'], tzinfos={'UT': timezone.utc})
+    def parse_notice_date(self):
+        self.alert.alert_timestamp = parse(self.alert.message['notice_date'], tzinfos={'UT': timezone.utc})
 
-    def parse_trigger_number(self, alert):
-        alert.alert_identifier = alert.message['trigger_num']
+    def parse_trigger_number(self):
+        self.alert.alert_identifier = self.alert.message['trigger_num']
 
-    def parse(self, alert):
+    def parse(self):
         try:
-            self.parse_message(alert)
+            self.parse_message()
 
-            if not GCNLVCNoticeParser.is_gcn_lvc_notice(alert):
+            if not self.is_alert_parsable():
                 return False
 
-            self.parse_trigger_number(alert)
+            self.parse_trigger_number()
 
-            event = GCNLVCNoticeParser.associate_event(alert)
-            GCNLVCNoticeParser.populate_event_attributes(alert, event)            
+            event = self.associate_event()
+            self.populate_event_attributes(event)            
             
-            self.parse_notice_date(alert)
+            self.parse_notice_date()
         except Exception as e:
-            logger.warn(f'Unable to parse alert {alert} with parser {self}: {e}')
+            logger.warn(f'Unable to parse alert {self.alert} with parser {self}: {e}')
             return False
         
         return True

@@ -60,11 +60,9 @@ class TestGCNLVCCounterpartNoticeParser(TestCase):
         self.alert = Alert.objects.create(message=test_superevent_counterpart_notice, topic=topic)
         self.event = Event.objects.create(event_identifier='S190426c')
 
-    # TODO: mock out get_confidence_regions
-    # @patch('skip.parsers.gcn_lvc_notice_plaintext_parser.get_confidence_regions')
     def test_parse(self):
-        parser = GCNLVCCounterpartNoticeParser()
-        parsed = parser.parse(self.alert)
+        parser = GCNLVCCounterpartNoticeParser(self.alert)
+        parsed = parser.parse()
         
         self.assertTrue(parsed)
         self.assertDictContainsSubset({'title': 'GCN/LVC COUNTERPART NOTICE', 'event_trig_num': 'S190426'},

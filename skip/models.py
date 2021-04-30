@@ -27,8 +27,6 @@ class Event(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    # TODO: add property for most recent event attributes
-
 
 class EventAttributes(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
@@ -46,9 +44,8 @@ class Alert(models.Model):
     alert_identifier = models.CharField(max_length=200)
     alert_timestamp = models.DateTimeField(null=True, blank=True)
     coordinates = gis_models.PointField(null=True, blank=True)
-    role = models.CharField(max_length=50, null=True, blank=True)
-    message = models.JSONField(default=dict)
-    extracted_fields = models.JSONField(default=dict)  # TODO: should we rename this?
+    message = models.JSONField(default=dict)  # rename to parsed_message
+    raw_message = models.JSONField(default=dict)
     parsed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

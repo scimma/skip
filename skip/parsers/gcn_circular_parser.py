@@ -52,61 +52,52 @@ class GCNCircularParser(BaseParser):
     def __repr__(self):
         return 'GCN Circular Parser'
 
-    @staticmethod
-    def associate_event(alert):
+    def associate_event(self):
         superevent_regex = re.compile(r'S\d{6}[a-z]?')  # matches S######??, where ?? is any number of lowercase alphas
-        matches = superevent_regex.findall(alert.message['subject'])
+        matches = superevent_regex.findall(self.alert.message['subject'])
         if len(matches) > 0:
             events = Event.objects.filter(event_identifier__icontains=matches[0])
             event = events.first() if events.exists() else Event.objects.create(event_identifier=matches[0])
-            event.alert_set.add(alert)
+            event.alert_set.add(self.alert)
             event.save()
             return event
 
-    @staticmethod
-    def is_gcn_circular(alert):  # TODO: this should be a common interface method with a generic name
-        print(alert.message)
-        return all(x.lower() in alert.message['title'].lower() for x in ['GCN', 'CIRCULAR'])
+    def is_alert_parsable(self):  # TODO: this should be a common interface method with a generic name
+        return all(x.lower() in self.alert.message['title'].lower() for x in ['GCN', 'CIRCULAR'])
 
-    def parse_date(self, alert):
-        alert.alert_timestamp = parse(alert.message['date'], parserinfo=parserinfo(yearfirst=True))
+    def parse_date(self):
+        self.alert.alert_timestamp = parse(self.alert.message['date'], parserinfo=parserinfo(yearfirst=True))
 
-    def parse_message(self, alert):
-        print('parse message')
-        print(alert.message)
-        alert_message = alert.message['content']
-        alert.message = {}
+    def parse_message(self):
+        alert_message = self.alert.message['content']
+        self.alert.message = {}
         try:
-            alert.message['body'] = alert_message['body']
+            self.alert.message['body'] = alert_message['body']
             alert_header = alert_message['header']
-            print(alert_header)
             for key, value in alert_header.items():
-                print(key, value)
-                alert.message[key.lower()] = value.strip()
+                self.alert.message[key.lower()] = value.strip()
         except Exception as e:
-            logger.warn(f'parse_message failed for {alert}: {e}')
-            alert.message = alert_message
+            logger.warn(f'parse_message failed for {self.alert}: {e}')
+            self.alert.message = alert_message
 
-    def parse_number(self, alert):
-        alert.alert_identifier = alert.message['number']
+    def parse_number(self):
+        self.alert.alert_identifier = self.alert.message['number']
 
-    def parse(self, alert):
+    def parse(self):
         try:
-            self.parse_message(alert)
-            print('parsed message')
+            self.parse_message()
 
-            if not GCNCircularParser.is_gcn_circular(alert):
-                print('False')
+            if not self.is_alert_parsable():
                 return False
 
-            event = GCNCircularParser.associate_event(alert)
+            event = self.associate_event()
 
-            self.parse_date(alert)
+            self.parse_date()
 
-            self.parse_number(alert)
+            self.parse_number()
         
         except Exception as e:
-            logger.warn(f'Unable to parse alert {alert} with parser {self}: {e}')
+            logger.warn(f'Unable to parse alert {self.alert} with parser {self}: {e}')
             return False
 
         return True
