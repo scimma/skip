@@ -3,9 +3,10 @@ from rest_framework import pagination
 from rest_framework import permissions
 from rest_framework import viewsets
 
-from skip.filters import AlertFilter, TopicFilter
-from skip.models import Alert, Target, Topic
-from skip.serializers import TargetSerializer, AlertSerializer, TopicSerializer
+from skip.filters import AlertFilter, EventFilter, TopicFilter
+from skip.models import Alert, Event, Target, Topic
+from skip.serializers import AlertSerializer, EventDetailSerializer, EventSerializer, TargetSerializer, TopicSerializer
+from skip.serializers.v1 import serializers as v1_serializers
 
 
 class TargetViewSet(viewsets.ModelViewSet):
@@ -29,7 +30,13 @@ class AlertViewSet(viewsets.ModelViewSet):
     serializer_class = AlertSerializer
 
     class Meta:
-        ordering = [F('alert_timestamp').desc(nulls_last=True)]  # https://docs.djangoproject.com/en/dev/ref/models/options/#ordering
+        # https://docs.djangoproject.com/en/dev/ref/models/options/#ordering
+        ordering = [F('alert_timestamp').desc(nulls_last=True), F('timestamp').desc(nulls_last=True)]
+
+    def get_serializer_class(self):
+        if self.request.version in ['v0', 'v1']:
+            return v1_serializers.AlertSerializer
+        return AlertSerializer
 
 
 class TopicViewSet(viewsets.ModelViewSet):
@@ -37,3 +44,13 @@ class TopicViewSet(viewsets.ModelViewSet):
     # permission_classes = [permissions.IsAuthenticated]
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    filterset_class = EventFilter
+    queryset = Event.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return EventDetailSerializer
+        return EventSerializer

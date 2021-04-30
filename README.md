@@ -2,6 +2,14 @@
 
 Django REST API to Hop Alerts Database
 
+## Topic Mapping
+
+Skip assumes the following Hopskotch topic mapping:
+
+- `gcn-circular`: All GCN Circulars
+- `lvc.lvc-counterpart`: GCN/LVC Counterpart Notices
+- `gcn`: All GCN Notices
+
 ## Local Development Quickstart
 
 ##### Using Django `runserver` (development only):

@@ -14,18 +14,44 @@ import boto3
 import logging.config
 import os
 
+# Logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO'
+        }
+    }
+}
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger(__name__)
+
 
 def get_secret(secret_name):
-    secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
-    return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
+    try:
+        secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
+        return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
+    except Exception as e:
+        logger.error(f'Unable to get secret {secret_name}: {e}')
 
 
 def get_rds_db(db_instance_id):
-    rds = boto3.client('rds', region_name='us-west-2')
-    resp = rds.describe_db_instances(Filters=[
-        {'Name': 'db-instance-id', 'Values': [db_instance_id]},
-    ])
-    return resp['DBInstances'][0]
+    try:
+        rds = boto3.client('rds', region_name='us-west-2')
+        resp = rds.describe_db_instances(Filters=[
+            {'Name': 'db-instance-id', 'Values': [db_instance_id]},
+        ])
+        return resp['DBInstances'][0]
+    except Exception as e:
+        logger.error(f'Unable to get RDS DB {db_instance_id}: {e}')
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -63,7 +89,8 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'skip_dpd',
     'django_plotly_dash.apps.DjangoPlotlyDashConfig',
-    'bootstrap4'
+    'bootstrap4',
+    'alert_scraper'
 ]
 
 MIDDLEWARE = [
@@ -104,38 +131,28 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-rds_db = get_rds_db('skip-postgres')
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.contrib.gis.db.backends.postgis'),
-        'NAME': rds_db['DBName'],
-        'USER': rds_db['MasterUsername'],
-        'PASSWORD': get_secret('skip-db-password-3'),
-        'HOST': rds_db['Endpoint']['Address'],
-        'PORT': rds_db['Endpoint']['Port'],
-    },
-}
-
-
-# Logging
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        }
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'INFO'
-        }
+def get_default_database_configuration():
+    database_configuration = {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'skip',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
-}
-logging.config.dictConfig(LOGGING)
+    rds_db = get_rds_db('skip-postgres')
+    if rds_db is not None:
+        database_configuration['NAME'] = rds_db['DBName']
+        database_configuration['USER'] = rds_db['MasterUsername']
+        database_configuration['PASSWORD'] = get_secret('skip-db-password-3')
+        database_configuration['HOST'] = rds_db['Endpoint']['Address']
+        database_configuration['POST'] = rds_db['Endpoint']['Port']
 
+    return database_configuration
+
+DATABASES = {
+    'default': get_default_database_configuration()
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -190,6 +207,8 @@ STATICFILES_FINDERS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'skip.pagination.SkipPagination',
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_VERSION': 'v2',
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -229,12 +248,12 @@ HOPSKOTCH_TOPICS = [
 ]
 
 HOPSKOTCH_PARSERS = {
-    'gcn': 'skip.parsers.gcn_parser.GCNParser',
-    'gcn-circular': 'skip.parsers.gcn_circular_parser.GCNCircularParser',
-    'lvc.lvc-counterpart': 'skip.parsers.lvc_counterpart_parser.LVCCounterpartParser',
-    'tns': 'skip.parsers.tns_parser.TNSParser',
-    'tomtoolkit-test': 'skip.parsers.tomtoolkit_parser.TOMToolkitParser',
-    'default': 'skip.parsers.base_parser.DefaultParser'
+    'gcn': ['skip.parsers.gcn_parser.GCNParser'],
+    'gcn-circular': ['skip.parsers.gcn_circular_parser.GCNCircularParser'],
+    'lvc.lvc-counterpart': ['skip.parsers.lvc_counterpart_parser.LVCCounterpartParser'],
+    # 'tns': ['skip.parsers.tns_parser.TNSParser'],
+    # 'tomtoolkit-test': ['skip.parsers.tomtoolkit_parser.TOMToolkitParser'],
+    'default': ['skip.parsers.base_parser.DefaultParser']
 }
 
 # NOTE: The existence of this setting makes migration impossible

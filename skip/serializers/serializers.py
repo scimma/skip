@@ -1,7 +1,7 @@
-from astropy.coordinates import Angle, SkyCoord
+from astropy.coordinates import Angle
 from astropy import units
 
-from skip.models import Alert, Target, Topic
+from skip.models import Alert, Event, EventAttributes, Target, Topic
 from rest_framework import serializers
 
 
@@ -20,19 +20,16 @@ class AlertSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
-        fields = [
-                #   'target',
-                  'id',
-                  'alert_identifier',
-                  'alert_timestamp',
+        fields = ['id',
+                  'identifier',
+                  'timestamp',
                   'topic',
                   'right_ascension',
                   'declination',
                   'right_ascension_sexagesimal',
                   'declination_sexagesimal',
-                  'role',
-                  'extracted_fields',
-                  'message',
+                  'parsed_message',
+                  'raw_message',
                   'created',
                   'modified']
 
@@ -62,3 +59,48 @@ class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
         fields = ['id', 'name']
+
+
+class EventAttributesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventAttributes
+        fields = [
+            'tag',
+            'sequence_number',
+            'attributes'
+        ]
+
+
+class EventSerializer(serializers.HyperlinkedModelSerializer):
+    event_attributes = serializers.SerializerMethodField()
+    event_detail = serializers.HyperlinkedIdentityField(view_name='skip:event-detail', read_only=True)
+
+    class Meta:
+        model = Event
+        fields = [
+            'id',
+            'identifier',
+            'event_detail',
+            'event_attributes'
+        ]
+
+    def get_event_attributes(self, instance):
+        event_attributes = instance.eventattributes_set.all().order_by('-sequence_number')
+        return EventAttributesSerializer(event_attributes, many=True).data
+
+
+class EventDetailSerializer(EventSerializer):
+    alerts = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = [
+            'id',
+            'identifier',
+            'event_attributes',
+            'alerts'
+        ]
+
+    def get_alerts(self, instance):
+        alerts = instance.alert_set.all().order_by('-timestamp')
+        return AlertSerializer(alerts, many=True).data
