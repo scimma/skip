@@ -20,7 +20,7 @@ setup(
     install_requires=[
         'astropy>=4.2',
         'beautifulsoup4>=4.9',
-        'boto3',
+        'boto3~=1.17',
         'confluent_kafka>=1.6',
         'Django>=3.1',
         'django-cors-headers>=3.7',

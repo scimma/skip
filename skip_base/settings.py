@@ -14,18 +14,44 @@ import boto3
 import logging.config
 import os
 
+# Logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO'
+        }
+    }
+}
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger(__name__)
+
 
 def get_secret(secret_name):
-    secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
-    return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
+    try:
+        secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
+        return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
+    except Exception as e:
+        logger.error(f'Unable to get secret {secret_name}: {e}')
 
 
 def get_rds_db(db_instance_id):
-    rds = boto3.client('rds', region_name='us-west-2')
-    resp = rds.describe_db_instances(Filters=[
-        {'Name': 'db-instance-id', 'Values': [db_instance_id]},
-    ])
-    return resp['DBInstances'][0]
+    try:
+        rds = boto3.client('rds', region_name='us-west-2')
+        resp = rds.describe_db_instances(Filters=[
+            {'Name': 'db-instance-id', 'Values': [db_instance_id]},
+        ])
+        return resp['DBInstances'][0]
+    except Exception as e:
+        logger.error(f'Unable to get RDS DB {db_instance_id}: {e}')
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -116,26 +142,6 @@ DATABASES = {
         'PORT': rds_db['Endpoint']['Port'],
     },
 }
-
-
-# Logging
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        }
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'INFO'
-        }
-    }
-}
-logging.config.dictConfig(LOGGING)
 
 
 # Password validation
