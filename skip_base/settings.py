@@ -242,6 +242,8 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
 HOPSKOTCH_TOPICS = [
     'gcn',
     'gcn-circular',
+    'lvc.gcn-test',
+    'lvc.gcn-circular-test',
     'lvc.lvc-counterpart',
     'TOMToolkit.test'
 ]
@@ -249,6 +251,8 @@ HOPSKOTCH_TOPICS = [
 HOPSKOTCH_PARSERS = {
     'gcn': ['skip.parsers.gcn_lvc_notice_plaintext_parser.GCNLVCNoticeParser'],
     'gcn-circular': ['skip.parsers.gcn_circular_parser.GCNCircularParser'],
+    'lvc.gcn-test': ['skip.parsers.gcn_lvc_notice_plaintext_parser.GCNLVCNoticeParser'],
+    'lvc.gcn-circular-test': ['skip.parsers.gcn_circular_parser.GCNCircularParser'],
     'lvc.lvc-counterpart': ['skip.parsers.gcn_lvc_counterpart_notice_parser.GCNLVCCounterpartNoticeParser'],
     # 'tomtoolkit-test': ['skip.parsers.tomtoolkit_parser.TOMToolkitParser'],
     'default': ['skip.parsers.base_parser.DefaultParser']
