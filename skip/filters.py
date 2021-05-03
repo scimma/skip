@@ -25,8 +25,6 @@ class AlertFilter(filters.FilterSet):
     polygon_search = filters.CharFilter(method='filter_polygon_search', label='Polygon Search',
                                         help_text='Comma-separated pairs of space-delimited coordinates (degrees).')
     timestamp = filters.DateTimeFromToRangeFilter()
-    role = filters.ChoiceFilter(choices=(('utility', 'Utility'), ('test', 'Test'), ('observation', 'Observation')),
-                                null_label='None')
     topic = filters.ModelMultipleChoiceFilter(queryset=Topic.objects.all())
     event_trigger_number = filters.CharFilter(method='filter_event_trigger_number', label='LVC Trigger Number')
 
