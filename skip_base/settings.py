@@ -34,6 +34,8 @@ LOGGING = {
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger(__name__)
 
+logger.warn('you have reached the settings, this is a logging test')
+
 
 # def get_secret(secret_name):
 #     try:
@@ -139,7 +141,6 @@ DATABASES = {
         'USER': os.getenv('DB_USERNAME', 'skip'),
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
-        # 'HOST': 'skip-postgres-dev.cgaf3c8se1sj.us-west-2.rds.amazonaws.com',
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
