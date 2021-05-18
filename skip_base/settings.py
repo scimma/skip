@@ -35,23 +35,23 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger(__name__)
 
 
-def get_secret(secret_name):
-    try:
-        secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
-        return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
-    except Exception as e:
-        logger.error(f'Unable to get secret {secret_name}: {e}')
+# def get_secret(secret_name):
+#     try:
+#         secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
+#         return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
+#     except Exception as e:
+#         logger.error(f'Unable to get secret {secret_name}: {e}')
 
 
-def get_rds_db(db_instance_id):
-    try:
-        rds = boto3.client('rds', region_name='us-west-2')
-        resp = rds.describe_db_instances(Filters=[
-            {'Name': 'db-instance-id', 'Values': [db_instance_id]},
-        ])
-        return resp['DBInstances'][0]
-    except Exception as e:
-        logger.error(f'Unable to get RDS DB {db_instance_id}: {e}')
+# def get_rds_db(db_instance_id):
+#     try:
+#         rds = boto3.client('rds', region_name='us-west-2')
+#         resp = rds.describe_db_instances(Filters=[
+#             {'Name': 'db-instance-id', 'Values': [db_instance_id]},
+#         ])
+#         return resp['DBInstances'][0]
+#     except Exception as e:
+#         logger.error(f'Unable to get RDS DB {db_instance_id}: {e}')
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -130,7 +130,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
+for key in ['DB_NAME', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']:
+    print(f'{key}: {os.getenv(key, "")}')
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
