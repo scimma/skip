@@ -84,6 +84,7 @@ spec:
             secretKeyRef:
               name: hopdevel-skip-db-info
               key: db_port
+      command: ["/usr/local/bin/gunicorn", "skip_base.wsgi:application", "--bind=0.0.0.0:80"]
     - name: skip-ingest
       image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
       imagePullPolicy: IfNotPresent
