@@ -13,15 +13,15 @@ spec:
         sizeLimit: 1M
   initContainers:
     - name: skip-static
-      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:test
-      imagePullPolicy: IfNotPresent
+      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
+      imagePullPolicy: Always
       volumeMounts:
         - name: skip-static
           mountPath: /static
           readOnly: false
       command: ["python", "manage.py", "collectstatic", "--no-input"]
     - name: skip-migrate
-      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:test
+      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
       imagePullPolicy: IfNotPresent
       env:
         - name: DB_USERNAME
@@ -52,8 +52,8 @@ spec:
       command: ["python", "manage.py", "migrate"]
   containers:
     - name: skip-web
-      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:test
-      imagePullPolicy: IfNotPresent
+      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
+      imagePullPolicy: Always
       volumeMounts:
         - name: skip-static
           mountPath: /static
@@ -85,7 +85,7 @@ spec:
               name: hopdevel-skip-db-info
               key: db_port
     - name: skip-ingest
-      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:test
+      image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
       imagePullPolicy: IfNotPresent
       env:
         - name: DB_USERNAME
