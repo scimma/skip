@@ -131,27 +131,16 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-def get_default_database_configuration():
-    database_configuration = {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'skip',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-    rds_db = get_rds_db('skip-postgres')
-    if rds_db is not None:
-        database_configuration['NAME'] = rds_db['DBName']
-        database_configuration['USER'] = rds_db['MasterUsername']
-        database_configuration['PASSWORD'] = get_secret('skip-db-password-3')
-        database_configuration['HOST'] = rds_db['Endpoint']['Address']
-        database_configuration['POST'] = rds_db['Endpoint']['Port']
-
-    return database_configuration
-
 DATABASES = {
-    'default': get_default_database_configuration()
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('DB_NAME', 'skip-db'),
+        'USER': os.getenv('DB_USERNAME', 'skip'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        # 'HOST': 'skip-postgres-dev.cgaf3c8se1sj.us-west-2.rds.amazonaws.com',
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
 }
 
 # Password validation
@@ -232,7 +221,7 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'security.protocol': 'sasl_ssl',
     'sasl.mechanism': 'SCRAM-SHA-512',
     'sasl.username': 'dcollom-a5c1897c',
-    'sasl.password': get_secret('dev-skip-hopskotch-password'),
+    'sasl.password': 'BVAhkLOLf4ptxesg1xvV1aWn3k9muoUN',
 
     # system dependency: ssl.ca.location may need to be set
     # this does not seem to be necessary on Ubuntu. However,
