@@ -37,12 +37,12 @@ logger = logging.getLogger(__name__)
 logger.warn('you have reached the settings, this is a logging test')
 
 
-# def get_secret(secret_name):
-#     try:
-#         secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
-#         return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
-#     except Exception as e:
-#         logger.error(f'Unable to get secret {secret_name}: {e}')
+def get_secret(secret_name):
+    try:
+        secrets_manager = boto3.client('secretsmanager', region_name='us-west-2')
+        return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
+    except Exception as e:
+        logger.error(f'Unable to get secret {secret_name}: {e}')
 
 
 # def get_rds_db(db_instance_id):
@@ -137,10 +137,10 @@ for key in ['DB_NAME', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']:
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DB_NAME', 'skip-db'),
+        'NAME': os.getenv('DB_NAME', 'skip_db'),
         'USER': os.getenv('DB_USERNAME', 'skip'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PASSWORD': os.getenv('DB_PASSWORD', get_secret('skip-db-password-5')),
+        'HOST': os.getenv('DB_HOST', 'skip-postgres.cgaf3c8se1sj.us-west-2.rds.amazonaws.com'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
