@@ -33,7 +33,7 @@ Third, choose a port (here we've choosen 8989) and run the server
 
 ```
 docker-compose build
-docker-compose up
+docker-compose up &
 ```
 
 Next, create a superuser:
