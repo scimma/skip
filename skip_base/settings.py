@@ -223,7 +223,7 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'security.protocol': 'sasl_ssl',
     'sasl.mechanism': 'SCRAM-SHA-512',
     'sasl.username': 'dcollom-a5c1897c',
-    'sasl.password': 'BVAhkLOLf4ptxesg1xvV1aWn3k9muoUN',
+    'sasl.password': '',
 
     # system dependency: ssl.ca.location may need to be set
     # this does not seem to be necessary on Ubuntu. However,
