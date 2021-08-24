@@ -249,7 +249,6 @@ HOPSKOTCH_PARSERS = {
     'default': ['skip.parsers.base_parser.DefaultParser']
 }
 
-# NOTE: The existence of this setting makes migration impossible
 SKIP_CLIENT = 'skip.skip_client.SkipORMClient'
 DEFAULT_PAGE_SIZE = 20
 SKIP_API_KEY = os.getenv('SKIP_API_KEY', '')
