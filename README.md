@@ -72,7 +72,7 @@ There are two ways to populate data.
 
 ##### Listening to the streams
 
-There is a management command that can be run manually to ingest data by running `./manage.py ingestmessages`. In order to run this, you will need to properly configure your `HOPSKOTCH_CONSUMER_CONFIGURATION` in `settings.py`. Credentials can be generated at https://admin.dev.hop.scimma.org. In order to immediately ingest messages, set `'auto.offset.reset': 'latest'`, which will begin ingesting at the beginning of all available messages.
+There is a management command that can be run manually to ingest data by running `./manage.py ingestmessages`. In order to run this, you will need to properly configure your `HOPSKOTCH_CONSUMER_CONFIGURATION` in `settings.py`. Credentials can be generated at https://admin.dev.hop.scimma.org. In order to immediately ingest messages, set `'auto.offset.reset': 'earliest'`, which will begin ingesting at the beginning of all available messages.
 
 ##### Getting Superevent data
 
