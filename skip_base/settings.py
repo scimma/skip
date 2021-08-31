@@ -133,7 +133,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-for key in ['DB_NAME', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']:
+for key in ['HOPSKOTCH_PASSWORD', 'DB_NAME', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']:
     print(f'{key}: {os.getenv(key, "")}')
 DATABASES = {
     'default': {
@@ -224,7 +224,7 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'security.protocol': 'sasl_ssl',
     'sasl.mechanism': 'SCRAM-SHA-512',
     'sasl.username': 'dcollom-a5c1897c',
-    'sasl.password': os.getenv('HOPSKOTCH_PASSWORD', get_secret('dev-skip-hopskotch-password')),
+    'sasl.password': os.getenv('HOPSKOTCH_PASSWORD', ''),
 
     # system dependency: ssl.ca.location may need to be set
     # this does not seem to be necessary on Ubuntu. However,
