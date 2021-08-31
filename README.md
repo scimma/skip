@@ -72,7 +72,25 @@ There are two ways to populate data.
 
 ##### Listening to the streams
 
-There is a management command that can be run manually to ingest data by running `./manage.py ingestmessages`. In order to run this, you will need to properly configure your `HOPSKOTCH_CONSUMER_CONFIGURATION` in `settings.py`. Credentials can be generated at https://admin.dev.hop.scimma.org. In order to immediately ingest messages, set `'auto.offset.reset': 'latest'`, which will begin ingesting at the beginning of all available messages.
+There is a management command that can be run manually to ingest data by running `./manage.py ingestmessages`. In order to run this, you will need to properly configure your `HOPSKOTCH_CONSUMER_CONFIGURATION` in `settings.py`. Credentials can be generated at https://admin.dev.hop.scimma.org and configured with permission to access the desired topics. In order to immediately ingest messages, set `'auto.offset.reset': 'earliest'`, which will begin ingesting at the beginning of all available messages. An example `HOPSKOTCH_CONSUMER_CONFIGURATION` is as follows:
+
+```python
+HOPSKOTCH_CONSUMER_CONFIGURATION = {
+    'bootstrap.servers': f'{HOPSKOTCH_SERVER}:{HOPSKOTCH_PORT}',
+    'group.id': os.getenv('HOPSKOTCH_GROUP', 'skip-test'),
+    'auto.offset.reset': 'latest',
+    'security.protocol': 'sasl_ssl',
+    'sasl.mechanism': 'SCRAM-SHA-512',
+    'sasl.username': 'dcollom-a5c1897c',
+    'sasl.password': '',
+
+    # system dependency: ssl.ca.location may need to be set
+    # this does not seem to be necessary on Ubuntu. However,
+    # for example on centos7: 'ssl.ca.location': '/etc/ssl/certs/ca-bundle.crt',
+}
+```
+
+`group.id` will need to be changed in order to reset the consumer position in the message queue.
 
 ##### Getting Superevent data
 
@@ -138,6 +156,7 @@ If the EC2 instance has been deployed to previously:
 ```bash
 cd skip
 git fetch && git pull origin main  # This is necessary to ensure the docker compose file is up to date
+$(aws ecr get-login --no-include-email --region us-west-2)
 docker-compose pull
 docker-compose up &
 ```
