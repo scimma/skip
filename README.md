@@ -147,6 +147,7 @@ git clone https://github.com/scimma/skip.git
 cd skip
 # If migrations are needed, please see the note in the Troubleshooting section of this document
 $(aws ecr get-login --no-include-email --region us-west-2)
+export HOPSKOTCH_PASSWORD=<password for hopskotch kafka username>
 docker-compose pull
 docker-compose up &
 ```
@@ -157,6 +158,7 @@ If the EC2 instance has been deployed to previously:
 cd skip
 git fetch && git pull origin main  # This is necessary to ensure the docker compose file is up to date
 $(aws ecr get-login --no-include-email --region us-west-2)
+export HOPSKOTCH_PASSWORD=<password for hopskotch kafka username>
 docker-compose pull
 docker-compose up &
 ```
