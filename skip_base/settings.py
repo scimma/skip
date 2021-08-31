@@ -219,7 +219,7 @@ HOPSKOTCH_CONSUMER_POLLING_TIMEOUT = 10
 
 HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'bootstrap.servers': f'{HOPSKOTCH_SERVER}:{HOPSKOTCH_PORT}',
-    'group.id': os.getenv('HOPSKOTCH_GROUP', 'skip-test'),
+    'group.id': os.getenv('HOPSKOTCH_GROUP', 'dcollom-a5c1897c-test'),
     'auto.offset.reset': 'latest',
     'security.protocol': 'sasl_ssl',
     'sasl.mechanism': 'SCRAM-SHA-512',
