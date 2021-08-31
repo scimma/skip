@@ -43,6 +43,7 @@ def get_secret(secret_name):
         return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
     except Exception as e:
         logger.error(f'Unable to get secret {secret_name}: {e}')
+        raise e
 
 
 # def get_rds_db(db_instance_id):
@@ -223,7 +224,7 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'security.protocol': 'sasl_ssl',
     'sasl.mechanism': 'SCRAM-SHA-512',
     'sasl.username': 'dcollom-a5c1897c',
-    'sasl.password': '',
+    'sasl.password': os.getenv('HOPSKOTCH_PASSWORD', get_secret('dev-skip-hopskotch-password')),
 
     # system dependency: ssl.ca.location may need to be set
     # this does not seem to be necessary on Ubuntu. However,
