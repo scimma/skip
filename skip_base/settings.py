@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'django_filters',
+    'webpack_loader',
     'skip',
     'django.contrib.postgres',
     'skip_dpd',
@@ -113,7 +114,7 @@ ROOT_URLCONF = 'skip_base.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -195,6 +196,19 @@ STATICFILES_FINDERS = [
     'django_plotly_dash.finders.DashAppDirectoryFinder',
 ]
 
+# Vue and django-webpack-loader/webpack-bundle-tracker configuration
+VUE_FRONTEND_DIR = os.path.join(BASE_DIR, 'vue')
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': 'vue/',  # must end with slash
+        'STATS_FILE': os.path.join(VUE_FRONTEND_DIR, 'webpack-stats.json'),
+        'POLL_INTERVAL': 0.1,
+        'TIMEOUT': None,
+        'IGNORE': [r'.+\.hot-update.js', r'.+\.map']
+    }
+}
+
 # Django REST Framework configuration
 
 REST_FRAMEWORK = {
@@ -231,7 +245,7 @@ HOPSKOTCH_CONSUMER_CONFIGURATION = {
     # for example on centos7: 'ssl.ca.location': '/etc/ssl/certs/ca-bundle.crt',
 }
 
-HOPSKOTCH_TOPICS = [
+HOPSKOTCH_TOPICS = [  # Topics that the ingesting consumer reads from
     'gcn',
     'gcn-circular',
     'lvc.gcn-test',
@@ -240,7 +254,7 @@ HOPSKOTCH_TOPICS = [
     'TOMToolkit.test'
 ]
 
-HOPSKOTCH_PARSERS = {
+HOPSKOTCH_PARSERS = {  # keys are valid hopskotch topics, values are lists of parsers in order of precedence
     'gcn': ['skip.parsers.gcn_lvc_notice_plaintext_parser.GCNLVCNoticeParser'],
     'gcn-circular': ['skip.parsers.gcn_circular_parser.GCNCircularParser'],
     'lvc.gcn-test': ['skip.parsers.gcn_lvc_notice_plaintext_parser.GCNLVCNoticeParser'],

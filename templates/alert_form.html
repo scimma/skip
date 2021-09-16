@@ -1,0 +1,9 @@
+{% load render_bundle from webpack_loader %}
+{% load static %}
+
+{% block content %}
+
+    {% render_bundle 'chunk-vendors' %}
+    {% render_bundle 'alert_form' %}
+
+{% endblock %}
