@@ -120,3 +120,6 @@ _static/
 
 # Scraping script stores GCN circular files here
 alerts/
+
+# VueJS
+vue/webpack-stats.json

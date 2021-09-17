@@ -11,5 +11,5 @@ Vue.config.productionTip = false
 
 
 new Vue({
-    render: h => h(AlertForm),
-  }).$mount('#alert-form')
+  render: h => h(AlertForm),
+}).$mount('#alert-form')
