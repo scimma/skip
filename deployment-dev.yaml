@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: skip-deployment
   labels:
-    app: skip
+    appName: skip-eks
 
 spec:
   restartPolicy: Never
@@ -54,6 +54,13 @@ spec:
     - name: skip-web
       image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
       imagePullPolicy: Always
+      resources:
+        requests:
+          memory: "500Mi"
+          cpu: "250m"
+        limits:
+          memory: "800Mi"
+          cpu: "500m"
       volumeMounts:
         - name: skip-static
           mountPath: /static
@@ -88,6 +95,13 @@ spec:
     - name: skip-ingest
       image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
       imagePullPolicy: IfNotPresent
+      resources:
+        requests:
+          memory: "500Mi"
+          cpu: "250m"
+        limits:
+          memory: "800Mi"
+          cpu: "500m"
       env:
         - name: DB_USERNAME
           valueFrom:

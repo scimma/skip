@@ -43,6 +43,7 @@ def get_secret(secret_name):
         return secrets_manager.get_secret_value(SecretId=secret_name)['SecretString']
     except Exception as e:
         logger.error(f'Unable to get secret {secret_name}: {e}')
+        # Not re-raising the exception so that collectstatic and other management commands can succeed
 
 
 # def get_rds_db(db_instance_id):
