@@ -11,8 +11,9 @@ class Command(BaseCommand):
 
     topic_mapping = {
         'lvc_counterpart': 'lvc.lvc-counterpart',
-        'lvc_notice': 'gcn',
-        'lvc_circular': 'gcn-circular'
+        'lvc_notice': 'lvc.gcn-test',
+        'lvc_circular': 'lvc.gcn-circular-test',
+        'lvc_notice_xml': 'lvc.lvc-counterpart',
     }
 
     def handle(self, *args, **options):

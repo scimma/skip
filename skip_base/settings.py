@@ -88,10 +88,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'django_filters',
+    'webpack_loader',
     'skip',
     'django.contrib.postgres',
-    'skip_dpd',
-    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
+    # 'skip_dpd',
+    # 'django_plotly_dash.apps.DjangoPlotlyDashConfig',
     'bootstrap4',
     'alert_scraper'
 ]
@@ -113,7 +114,7 @@ ROOT_URLCONF = 'skip_base.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -133,7 +134,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-for key in ['DB_NAME', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']:
+for key in ['HOPSKOTCH_PASSWORD', 'DB_NAME', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']:
     print(f'{key}: {os.getenv(key, "")}')
 DATABASES = {
     'default': {
@@ -145,6 +146,8 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -190,10 +193,23 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 
-    'django_plotly_dash.finders.DashAssetFinder',
-    'django_plotly_dash.finders.DashComponentFinder',
-    'django_plotly_dash.finders.DashAppDirectoryFinder',
+    # 'django_plotly_dash.finders.DashAssetFinder',
+    # 'django_plotly_dash.finders.DashComponentFinder',
+    # 'django_plotly_dash.finders.DashAppDirectoryFinder',
 ]
+
+# Vue and django-webpack-loader/webpack-bundle-tracker configuration
+VUE_FRONTEND_DIR = os.path.join(BASE_DIR, 'vue')
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': 'vue/',  # must end with slash
+        'STATS_FILE': os.path.join(VUE_FRONTEND_DIR, 'webpack-stats.json'),
+        'POLL_INTERVAL': 0.1,
+        'TIMEOUT': None,
+        'IGNORE': [r'.+\.hot-update.js', r'.+\.map']
+    }
+}
 
 # Django REST Framework configuration
 
@@ -219,19 +235,19 @@ HOPSKOTCH_CONSUMER_POLLING_TIMEOUT = 10
 
 HOPSKOTCH_CONSUMER_CONFIGURATION = {
     'bootstrap.servers': f'{HOPSKOTCH_SERVER}:{HOPSKOTCH_PORT}',
-    'group.id': os.getenv('HOPSKOTCH_GROUP', 'skip-test'),
+    'group.id': os.getenv('HOPSKOTCH_GROUP', 'dcollom-a5c1897c-test'),  # group.id must be prefix with credential name
     'auto.offset.reset': 'latest',
     'security.protocol': 'sasl_ssl',
     'sasl.mechanism': 'SCRAM-SHA-512',
     'sasl.username': 'dcollom-a5c1897c',
-    'sasl.password': 'BVAhkLOLf4ptxesg1xvV1aWn3k9muoUN',
+    'sasl.password': os.getenv('HOPSKOTCH_PASSWORD', ''),
 
     # system dependency: ssl.ca.location may need to be set
     # this does not seem to be necessary on Ubuntu. However,
     # for example on centos7: 'ssl.ca.location': '/etc/ssl/certs/ca-bundle.crt',
 }
 
-HOPSKOTCH_TOPICS = [
+HOPSKOTCH_TOPICS = [  # Topics that the ingesting consumer reads from
     'gcn',
     'gcn-circular',
     'lvc.gcn-test',
@@ -240,7 +256,7 @@ HOPSKOTCH_TOPICS = [
     'TOMToolkit.test'
 ]
 
-HOPSKOTCH_PARSERS = {
+HOPSKOTCH_PARSERS = {  # keys are valid hopskotch topics, values are lists of parsers in order of precedence
     'gcn': ['skip.parsers.gcn_lvc_notice_plaintext_parser.GCNLVCNoticeParser'],
     'gcn-circular': ['skip.parsers.gcn_circular_parser.GCNCircularParser'],
     'lvc.gcn-test': ['skip.parsers.gcn_lvc_notice_plaintext_parser.GCNLVCNoticeParser'],
@@ -250,27 +266,26 @@ HOPSKOTCH_PARSERS = {
     'default': ['skip.parsers.base_parser.DefaultParser']
 }
 
-# NOTE: The existence of this setting makes migration impossible
 SKIP_CLIENT = 'skip.skip_client.SkipORMClient'
 DEFAULT_PAGE_SIZE = 20
 SKIP_API_KEY = os.getenv('SKIP_API_KEY', '')
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-PLOTLY_COMPONENTS = [
-    # Common components
-    'dash_core_components',
-    'dash_html_components',
-    'dash_renderer',
+# PLOTLY_COMPONENTS = [
+#     # Common components
+#     'dash_core_components',
+#     'dash_html_components',
+#     'dash_renderer',
 
-    # django-plotly-dash components
-    'dpd_components',
-    # static support if serving local assets
-    'dpd_static_support',
+#     # django-plotly-dash components
+#     'dpd_components',
+#     # static support if serving local assets
+#     'dpd_static_support',
 
-    # Other components, as needed
-    'dash_bootstrap_components',
-    'dash_table'
-]
+#     # Other components, as needed
+#     'dash_bootstrap_components',
+#     'dash_table'
+# ]
 
 
 try:

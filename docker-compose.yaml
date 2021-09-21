@@ -23,12 +23,15 @@ services:
       - migrate
     volumes:
       - static:/skip/static
+    environment:
+      - HOPSKOTCH_PASSWORD=${HOPSKOTCH_PASSWORD}
   ingest:
     image: 585193511743.dkr.ecr.us-west-2.amazonaws.com/scimma/skip-web:latest
     container_name: skip-ingest
     entrypoint: ["python", "manage.py", "ingestmessages"]
     environment:
       - PYTHONUNBUFFERED=1
+      - HOPSKOTCH_PASSWORD=${HOPSKOTCH_PASSWORD}
     depends_on:
       - migrate
 
