@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.urls import path, re_path
+from django.views.generic import TemplateView
 
 from skip_base.views import Index
 
@@ -28,6 +29,7 @@ urlpatterns = [
     re_path('^api/v1/', include('skip.urls', namespace='v1')),
     re_path('^api/v2/', include('skip.urls', namespace='v2')),
     url('^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('alert/submit/', TemplateView.as_view(template_name='alert_form.html'), name='alert_form'),
     # path('django_plotly_dash/', include('django_plotly_dash.urls')),
     # url('^', include('skip_dpd.urls', namespace='skip-dash')),
 ]
