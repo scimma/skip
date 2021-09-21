@@ -1,7 +1,13 @@
+from django.conf import settings
 from django.db.models import F
+from django.http import HttpResponse
+from hop import Stream
+from hop.auth import Auth
+from rest_framework import mixins
 from rest_framework import pagination
 from rest_framework import permissions
 from rest_framework import viewsets
+from rest_framework.decorators import action
 
 from skip.filters import AlertFilter, EventFilter, TopicFilter
 from skip.models import Alert, Event, Target, Topic
@@ -20,7 +26,7 @@ class TargetViewSet(viewsets.ModelViewSet):
     pagination_class = pagination.PageNumberPagination
 
 
-class AlertViewSet(viewsets.ModelViewSet):
+class AlertViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin):
     """
     API endpoint that allows groups to be viewed or edited.
     """
@@ -37,6 +43,19 @@ class AlertViewSet(viewsets.ModelViewSet):
         if self.request.version in ['v0', 'v1']:
             return v1_serializers.AlertSerializer
         return AlertSerializer
+
+    @action(detail=False, methods=['post'])
+    def submit(self, request, *args, **kwargs):
+        auth = Auth(
+            settings.HOPSKOTCH_CONSUMER_CONFIGURATION['sasl.username'],
+            settings.HOPSKOTCH_CONSUMER_CONFIGURATION['sasl.password']
+        )
+        stream = Stream(auth=auth)
+
+        topic = request.data.pop('topic')
+        with stream.open(f'kafka://{settings.HOPSKOTCH_SERVER}:{settings.HOPSKOTCH_PORT}/{topic}', 'w') as s:
+            s.write(request.data)
+        return HttpResponse(f'Successfully submitted alert to {topic}.')
 
 
 class TopicViewSet(viewsets.ModelViewSet):
