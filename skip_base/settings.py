@@ -91,8 +91,8 @@ INSTALLED_APPS = [
     'webpack_loader',
     'skip',
     'django.contrib.postgres',
-    'skip_dpd',
-    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
+    # 'skip_dpd',
+    # 'django_plotly_dash.apps.DjangoPlotlyDashConfig',
     'bootstrap4',
     'alert_scraper'
 ]
@@ -147,6 +147,8 @@ DATABASES = {
     }
 }
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -191,9 +193,9 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 
-    'django_plotly_dash.finders.DashAssetFinder',
-    'django_plotly_dash.finders.DashComponentFinder',
-    'django_plotly_dash.finders.DashAppDirectoryFinder',
+    # 'django_plotly_dash.finders.DashAssetFinder',
+    # 'django_plotly_dash.finders.DashComponentFinder',
+    # 'django_plotly_dash.finders.DashAppDirectoryFinder',
 ]
 
 # Vue and django-webpack-loader/webpack-bundle-tracker configuration
@@ -269,21 +271,21 @@ DEFAULT_PAGE_SIZE = 20
 SKIP_API_KEY = os.getenv('SKIP_API_KEY', '')
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-PLOTLY_COMPONENTS = [
-    # Common components
-    'dash_core_components',
-    'dash_html_components',
-    'dash_renderer',
+# PLOTLY_COMPONENTS = [
+#     # Common components
+#     'dash_core_components',
+#     'dash_html_components',
+#     'dash_renderer',
 
-    # django-plotly-dash components
-    'dpd_components',
-    # static support if serving local assets
-    'dpd_static_support',
+#     # django-plotly-dash components
+#     'dpd_components',
+#     # static support if serving local assets
+#     'dpd_static_support',
 
-    # Other components, as needed
-    'dash_bootstrap_components',
-    'dash_table'
-]
+#     # Other components, as needed
+#     'dash_bootstrap_components',
+#     'dash_table'
+# ]
 
 
 try:

@@ -2,7 +2,7 @@
   <b-container id="alert-form">
     <b-tabs content-class="mt-2">
       <b-tab title="Structured Alert" active>
-        <b-form @submit="onSubmitAlert">
+        <b-form>
           <b-form-group label="Select topic">
             <b-form-select id="alert-topic" v-model="form.topic" :options="topics" />
           </b-form-group>
@@ -30,7 +30,7 @@
           <b-form-group>
             <b-form-input id="alert-text" v-model="form.text" placeholder="Enter alert text" type="text" />
           </b-form-group>
-          <b-button type="submit" variant="primary">Submit</b-button>
+          <b-button @click="onSubmitAlert" variant="primary">Submit</b-button>
         </b-form>
       </b-tab>
       <b-tab title="GCN Circular">
