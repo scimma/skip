@@ -1,4 +1,4 @@
-# Skip
+# Skip - Superevents Kept In PostGIS
 
 Django REST API to Hop Alerts Database
 
