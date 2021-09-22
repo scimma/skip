@@ -23,8 +23,8 @@ jobs:
       postgres:
         image: postgis/postgis:11-2.5
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: skip
+          POSTGRES_PASSWORD: skip
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -45,4 +45,6 @@ jobs:
           pip install -r requirements.txt
           pip install -I flake8
       - name: Run Tests
+        env:
+          DB_PASSWORD: skip
         run: python manage.py test
