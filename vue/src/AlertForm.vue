@@ -107,7 +107,7 @@ export default {
     onSubmitAlert() {
       console.log('on submit alert');
       axios
-        .post(`http://localhost:8000/api/alerts/submit/`, this.form)
+        .post(`http://skip.dev.hop.scimma.org/api/alerts/submit/`, this.form)
         .then(response => {
           console.log(response);
         })
