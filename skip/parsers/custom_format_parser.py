@@ -48,8 +48,8 @@ class CustomFormatParser(BaseParser):
     def parse(self):
         try:
 
-            self.alert.right_ascension = self.alert.raw_message['right_ascension']
-            self.alert.declination = self.alert.raw_message['declination']
+            self.alert.right_ascension = self.alert.raw_message['content']['right_ascension']
+            self.alert.declination = self.alert.raw_message['content']['declination']
 
             self.parse_date()
             self.parse_message()
