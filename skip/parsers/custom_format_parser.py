@@ -1,7 +1,8 @@
 from datetime import datetime
+from dateutil.parser import parse, parserinfo
 import logging
 
-from dateutil.parser import parse, parserinfo
+from django.contrib.gis.geos import Point
 
 from skip.parsers.base_parser import BaseParser
 
@@ -27,16 +28,21 @@ class CustomFormatParser(BaseParser):
     def __repr__(self):
         return 'Custom Format Parser'
 
+    def parse_coordinates(self):
+        ra = self.alert.raw_message['content']['right_ascension']
+        dec = self.alert.raw_message['content']['declination']
+        self.alert.coordinates = Point(float(ra), float(dec), srid=4035)
+
     def parse_date(self):
-        date_value = parse(self.alert.parsed_message['date'], parserinfo=parserinfo(yearfirst=True))
-        time_value = parse(self.alert.parsed_message['time'], parserinfo=parserinfo(yearfirst=True))
-        self.alert.timestamp = datetime.combine(date_value, time_value).time()
+        date_value = parse(self.alert.raw_message['content']['date'], parserinfo=parserinfo(yearfirst=True))
+        time_value = parse(self.alert.raw_message['content']['time'], parserinfo=parserinfo(yearfirst=True))
+        self.alert.timestamp = datetime.combine(date_value, time_value.time())
 
     def parse_message(self):
         alert_message = self.alert.raw_message['content']
         try:
             for key, value in alert_message.items():
-                self.alert.parsed_message[key.lower()] = value.strip()
+                self.alert.parsed_message[key.lower()] = value
         except Exception as e:
             logger.warn(f'parse_message failed for {self.alert}: {e}')
 
@@ -45,11 +51,10 @@ class CustomFormatParser(BaseParser):
 
     def parse(self):
         try:
-
-            self.alert.right_ascension = self.alert.raw_message['content']['right_ascension']
-            self.alert.declination = self.alert.raw_message['content']['declination']
+            self.parse_coordinates()
 
             self.parse_date()
+
             self.parse_message()
 
         except Exception as e:
