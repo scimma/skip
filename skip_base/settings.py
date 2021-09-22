@@ -134,6 +134,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+# This is here to debug kubernetes secrets for eventual move to kubernetes
 for key in ['HOPSKOTCH_PASSWORD', 'DB_NAME', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']:
     print(f'{key}: {os.getenv(key, "")}')
 DATABASES = {
