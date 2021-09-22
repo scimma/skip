@@ -23,6 +23,7 @@ jobs:
       postgres:
         image: postgis/postgis:11-2.5
         env:
+          POSTGRES_DB: skip_db
           POSTGRES_USER: skip
           POSTGRES_PASSWORD: skip
         options: >-
@@ -47,4 +48,5 @@ jobs:
       - name: Run Tests
         env:
           DB_PASSWORD: skip
+          DB_HOST: localhost
         run: python manage.py test
