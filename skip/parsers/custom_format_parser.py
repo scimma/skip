@@ -1,10 +1,8 @@
 from datetime import datetime
 import logging
-import re
 
 from dateutil.parser import parse, parserinfo
 
-from skip.models import Event
 from skip.parsers.base_parser import BaseParser
 
 
